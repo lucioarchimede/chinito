@@ -7,9 +7,11 @@ import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
 import Badge from '../components/ui/Badge';
+import { TableSkeleton } from '../components/ui/Skeleton';
 import { formatCurrency, formatDate, formatDateInput, today, monthStart } from '../utils/formatters';
 
 const EMPTY = { flow_date: today(), category: '', type: 'ingreso', amount: '', description: '', is_projected: false, notes: '' };
+const dateInputCls = 'text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white hover:border-slate-400 transition-colors';
 
 export default function CashFlow() {
   const [entries, setEntries] = useState([]);
@@ -73,30 +75,30 @@ export default function CashFlow() {
     <div>
       {/* Summary */}
       {summary && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <TrendingUp size={16} className="text-green-500" />
-              <p className="text-xs text-gray-500 uppercase">Ingresos Reales</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-5">
+          <div className="bg-white rounded-xl border border-slate-200 shadow-card p-4">
+            <div className="flex items-center gap-1.5 mb-1">
+              <TrendingUp size={14} className="text-emerald-500" />
+              <p className="text-xs text-slate-500 uppercase tracking-wide">Ingresos Reales</p>
             </div>
-            <p className="text-2xl font-bold text-green-600">{formatCurrency(summary.ingresos_reales)}</p>
+            <p className="text-xl font-bold text-emerald-600">{formatCurrency(summary.ingresos_reales)}</p>
           </div>
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <TrendingDown size={16} className="text-red-500" />
-              <p className="text-xs text-gray-500 uppercase">Egresos Reales</p>
+          <div className="bg-white rounded-xl border border-slate-200 shadow-card p-4">
+            <div className="flex items-center gap-1.5 mb-1">
+              <TrendingDown size={14} className="text-red-500" />
+              <p className="text-xs text-slate-500 uppercase tracking-wide">Egresos Reales</p>
             </div>
-            <p className="text-2xl font-bold text-red-600">{formatCurrency(summary.egresos_reales)}</p>
+            <p className="text-xl font-bold text-red-600">{formatCurrency(summary.egresos_reales)}</p>
           </div>
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-            <p className="text-xs text-gray-500 uppercase mb-1">Balance Real</p>
-            <p className={`text-2xl font-bold ${parseFloat(summary.balance_real) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+          <div className="bg-white rounded-xl border border-slate-200 shadow-card p-4">
+            <p className="text-xs text-slate-500 uppercase tracking-wide mb-1">Balance Real</p>
+            <p className={`text-xl font-bold ${parseFloat(summary.balance_real) >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
               {formatCurrency(summary.balance_real)}
             </p>
           </div>
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-            <p className="text-xs text-gray-500 uppercase mb-1">Balance c/Proyectado</p>
-            <p className={`text-2xl font-bold ${parseFloat(summary.balance_total) >= 0 ? 'text-indigo-600' : 'text-red-600'}`}>
+          <div className="bg-white rounded-xl border border-slate-200 shadow-card p-4">
+            <p className="text-xs text-slate-500 uppercase tracking-wide mb-1">Balance c/Proyectado</p>
+            <p className={`text-xl font-bold ${parseFloat(summary.balance_total) >= 0 ? 'text-indigo-600' : 'text-red-600'}`}>
               {formatCurrency(summary.balance_total)}
             </p>
           </div>
@@ -105,14 +107,16 @@ export default function CashFlow() {
 
       {/* Gráfico mensual */}
       {summary?.monthly?.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-5">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4">Ingresos vs Egresos por Mes</h3>
-          <ResponsiveContainer width="100%" height={220}>
+        <div className="bg-white rounded-xl border border-slate-200 shadow-card p-5 mb-5">
+          <h3 className="text-sm font-semibold text-slate-700 mb-4">Ingresos vs Egresos por Mes</h3>
+          <ResponsiveContainer width="100%" height={200}>
             <BarChart data={summary.monthly} margin={{ top: 0, right: 10, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-              <XAxis dataKey="mes" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `$${(v/1000).toFixed(0)}k`} />
-              <Tooltip formatter={(v) => formatCurrency(v)} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <XAxis dataKey="mes" tick={{ fontSize: 11, fill: '#94a3b8' }} />
+              <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickFormatter={v => `$${(v/1000).toFixed(0)}k`} />
+              <Tooltip
+                contentStyle={{ borderRadius: 10, border: '1px solid #e2e8f0' }}
+                formatter={(v) => formatCurrency(v)} />
               <Legend />
               <Bar dataKey="ingresos" name="Ingresos" fill="#10b981" radius={[4,4,0,0]} />
               <Bar dataKey="egresos" name="Egresos" fill="#ef4444" radius={[4,4,0,0]} />
@@ -121,14 +125,11 @@ export default function CashFlow() {
         </div>
       )}
 
-      {/* Filtros + acción */}
-      <div className="flex flex-wrap items-center gap-3 mb-5">
-        <input type="date" value={filters.start_date} onChange={e => setFilters(p => ({ ...p, start_date: e.target.value }))}
-          className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-        <input type="date" value={filters.end_date} onChange={e => setFilters(p => ({ ...p, end_date: e.target.value }))}
-          className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-        <select value={filters.type} onChange={e => setFilters(p => ({ ...p, type: e.target.value }))}
-          className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+      {/* Filtros */}
+      <div className="flex flex-wrap items-center gap-2.5 mb-5">
+        <input type="date" value={filters.start_date} onChange={e => setFilters(p => ({ ...p, start_date: e.target.value }))} className={dateInputCls} />
+        <input type="date" value={filters.end_date} onChange={e => setFilters(p => ({ ...p, end_date: e.target.value }))} className={dateInputCls} />
+        <select value={filters.type} onChange={e => setFilters(p => ({ ...p, type: e.target.value }))} className={dateInputCls}>
           <option value="">Todos</option>
           <option value="ingreso">Ingresos</option>
           <option value="egreso">Egresos</option>
@@ -136,46 +137,44 @@ export default function CashFlow() {
         <Button icon={Plus} onClick={openCreate} className="ml-auto">Nueva Entrada</Button>
       </div>
 
-      {/* Tabla */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        {loading ? (
-          <div className="flex items-center justify-center h-48">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
-          </div>
-        ) : entries.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-48 text-gray-400">
-            <TrendingUp size={36} className="mb-2" />
-            <p>No hay entradas en este período</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-100">
-              <thead className="bg-gray-50">
+      {loading ? (
+        <TableSkeleton rows={6} cols={5} />
+      ) : entries.length === 0 ? (
+        <div className="bg-white rounded-xl border border-slate-200 shadow-card flex flex-col items-center justify-center h-48 text-slate-400">
+          <TrendingUp size={32} className="mb-2.5" />
+          <p className="text-sm">No hay entradas en este período</p>
+        </div>
+      ) : (
+        <div className="bg-white rounded-xl border border-slate-200 shadow-card overflow-hidden">
+          {/* Desktop */}
+          <div className="hidden sm:block overflow-x-auto">
+            <table className="min-w-full divide-y divide-slate-100">
+              <thead className="bg-slate-50">
                 <tr>
                   {['Fecha', 'Descripción', 'Categoría', 'Tipo', 'Monto', 'Estado', ''].map(h => (
-                    <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{h}</th>
+                    <th key={h} className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-slate-50">
                 {entries.map(e => (
-                  <tr key={e.id} className={`hover:bg-gray-50 ${e.is_projected ? 'opacity-70' : ''}`}>
-                    <td className="px-4 py-3 text-sm text-gray-600">{formatDate(e.flow_date)}</td>
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900">{e.description || '—'}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{e.category || '—'}</td>
+                  <tr key={e.id} className={`hover:bg-slate-50 transition-colors group ${e.is_projected ? 'opacity-70' : ''}`}>
+                    <td className="px-4 py-3 text-sm text-slate-500">{formatDate(e.flow_date)}</td>
+                    <td className="px-4 py-3 text-sm font-medium text-slate-900">{e.description || '—'}</td>
+                    <td className="px-4 py-3 text-sm text-slate-500">{e.category || '—'}</td>
                     <td className="px-4 py-3">
                       <Badge variant={e.type === 'ingreso' ? 'green' : 'red'}>{e.type}</Badge>
                     </td>
-                    <td className={`px-4 py-3 text-sm font-semibold ${e.type === 'ingreso' ? 'text-green-600' : 'text-red-600'}`}>
+                    <td className={`px-4 py-3 text-sm font-semibold ${e.type === 'ingreso' ? 'text-emerald-600' : 'text-red-600'}`}>
                       {e.type === 'ingreso' ? '+' : '-'}{formatCurrency(e.amount)}
                     </td>
                     <td className="px-4 py-3">
                       {e.is_projected ? <Badge variant="yellow">Proyectado</Badge> : <Badge variant="gray">Real</Badge>}
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex gap-2">
-                        <button onClick={() => openEdit(e)} className="text-gray-400 hover:text-indigo-600"><Edit2 size={15} /></button>
-                        <button onClick={() => setDeleteId(e.id)} className="text-gray-400 hover:text-red-600"><Trash2 size={15} /></button>
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => openEdit(e)} className="text-slate-400 hover:text-indigo-600 p-1 rounded hover:bg-indigo-50 transition-colors"><Edit2 size={14} /></button>
+                        <button onClick={() => setDeleteId(e.id)} className="text-slate-400 hover:text-red-600 p-1 rounded hover:bg-red-50 transition-colors"><Trash2 size={14} /></button>
                       </div>
                     </td>
                   </tr>
@@ -183,10 +182,34 @@ export default function CashFlow() {
               </tbody>
             </table>
           </div>
-        )}
-      </div>
 
-      {/* Modal */}
+          {/* Mobile */}
+          <div className="sm:hidden divide-y divide-slate-100">
+            {entries.map(e => (
+              <div key={e.id} className={`px-4 py-3.5 ${e.is_projected ? 'opacity-70' : ''}`}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-medium text-slate-900">{e.description || '—'}</p>
+                      <Badge variant={e.type === 'ingreso' ? 'green' : 'red'}>{e.type}</Badge>
+                      {e.is_projected && <Badge variant="yellow">Proyectado</Badge>}
+                    </div>
+                    <p className="text-xs text-slate-400 mt-0.5">{formatDate(e.flow_date)}{e.category && ` · ${e.category}`}</p>
+                    <p className={`text-sm font-semibold mt-1 ${e.type === 'ingreso' ? 'text-emerald-600' : 'text-red-600'}`}>
+                      {e.type === 'ingreso' ? '+' : '-'}{formatCurrency(e.amount)}
+                    </p>
+                  </div>
+                  <div className="flex gap-1 flex-shrink-0">
+                    <button onClick={() => openEdit(e)} className="text-slate-400 hover:text-indigo-600 p-1.5 rounded transition-colors"><Edit2 size={15} /></button>
+                    <button onClick={() => setDeleteId(e.id)} className="text-slate-400 hover:text-red-600 p-1.5 rounded transition-colors"><Trash2 size={15} /></button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editId ? 'Editar Entrada' : 'Nueva Entrada'} size="md">
         <form onSubmit={handleSave} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
@@ -204,8 +227,8 @@ export default function CashFlow() {
           <div className="flex items-center gap-2">
             <input type="checkbox" id="projected" checked={form.is_projected}
               onChange={e => setForm(p => ({ ...p, is_projected: e.target.checked }))}
-              className="w-4 h-4 rounded border-gray-300 text-indigo-600" />
-            <label htmlFor="projected" className="text-sm text-gray-700">Es un valor proyectado/estimado</label>
+              className="w-4 h-4 rounded border-slate-300 text-indigo-600" />
+            <label htmlFor="projected" className="text-sm text-slate-700">Es un valor proyectado/estimado</label>
           </div>
           <Input label="Notas" value={form.notes} onChange={ff('notes')} />
           <div className="flex justify-end gap-3 pt-2">
@@ -217,8 +240,8 @@ export default function CashFlow() {
 
       <Modal isOpen={!!deleteId} onClose={() => setDeleteId(null)} title="Eliminar Entrada" size="sm">
         <div className="flex items-start gap-3 mb-5">
-          <AlertTriangle size={22} className="text-red-500 flex-shrink-0" />
-          <p className="text-sm text-gray-600">¿Eliminar esta entrada de cash flow?</p>
+          <AlertTriangle size={20} className="text-red-500 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-slate-600">¿Eliminar esta entrada de cash flow?</p>
         </div>
         <div className="flex justify-end gap-3">
           <Button variant="secondary" onClick={() => setDeleteId(null)}>Cancelar</Button>

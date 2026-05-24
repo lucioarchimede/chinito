@@ -10,7 +10,7 @@ import { formatDate } from '../utils/formatters';
 
 const EMPTY = { title: '', content: '', category: '', tags: '', is_pinned: false };
 const CATEGORIES = ['estrategia', 'proveedores', 'ideas', 'operaciones', 'finanzas', 'clientes', 'otro'];
-const catColor = (c) => ({ estrategia: 'indigo', proveedores: 'blue', ideas: 'purple', operaciones: 'orange', finanzas: 'green', clientes: 'yellow', otro: 'gray' }[c] || 'gray');
+const catColor = (c) => ({ estrategia:'indigo', proveedores:'blue', ideas:'purple', operaciones:'orange', finanzas:'green', clientes:'yellow', otro:'gray' }[c] || 'gray');
 
 export default function Notas() {
   const [notes, setNotes] = useState([]);
@@ -80,40 +80,40 @@ export default function Notas() {
   const NoteCard = ({ note }) => (
     <div
       onClick={() => setViewNote(note)}
-      className={`bg-white rounded-xl border shadow-sm p-4 cursor-pointer hover:shadow-md transition-shadow relative
-        ${note.is_pinned ? 'border-indigo-200' : 'border-gray-200'}`}
+      className={`bg-white rounded-xl border shadow-card p-4 cursor-pointer hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 relative
+        ${note.is_pinned ? 'border-indigo-200 bg-indigo-50/30' : 'border-slate-200'}`}
     >
       <div className="flex items-start justify-between gap-2 mb-2">
-        <h3 className="font-semibold text-gray-900 text-sm leading-snug">{note.title}</h3>
-        {note.is_pinned && <Pin size={13} className="text-indigo-500 flex-shrink-0 mt-0.5" />}
+        <h3 className="font-semibold text-slate-900 text-sm leading-snug">{note.title}</h3>
+        {note.is_pinned && <Pin size={12} className="text-indigo-500 flex-shrink-0 mt-0.5" />}
       </div>
       {note.content && (
-        <p className="text-xs text-gray-500 line-clamp-3 mb-2 whitespace-pre-wrap">{note.content}</p>
+        <p className="text-xs text-slate-500 line-clamp-3 mb-2.5 whitespace-pre-wrap leading-relaxed">{note.content}</p>
       )}
-      <div className="flex items-center justify-between mt-2">
+      <div className="flex items-center justify-between mt-auto pt-1">
         <div className="flex gap-1.5 flex-wrap">
           {note.category && <Badge variant={catColor(note.category)}>{note.category}</Badge>}
           {Array.isArray(note.tags) && note.tags.slice(0, 2).map(t => (
-            <span key={t} className="text-xs text-gray-400">#{t}</span>
+            <span key={t} className="text-xs text-slate-400">#{t}</span>
           ))}
         </div>
-        <span className="text-xs text-gray-400">{formatDate(note.updated_at)}</span>
+        <span className="text-xs text-slate-400 flex-shrink-0 ml-2">{formatDate(note.updated_at)}</span>
       </div>
     </div>
   );
 
   return (
     <div>
-      {/* Barra de filtros */}
-      <div className="flex flex-wrap items-center gap-3 mb-5">
-        <div className="flex-1 min-w-48 relative">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+      {/* Filtros */}
+      <div className="flex flex-wrap items-center gap-2.5 mb-5">
+        <div className="flex-1 min-w-40 relative">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input placeholder="Buscar notas..." value={filters.q}
             onChange={e => setFilters(p => ({ ...p, q: e.target.value }))}
-            className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            className="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white hover:border-slate-400 transition-colors" />
         </div>
         <select value={filters.category} onChange={e => setFilters(p => ({ ...p, category: e.target.value }))}
-          className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+          className="text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white hover:border-slate-400 transition-colors">
           <option value="">Todas las categorías</option>
           {CATEGORIES.map(c => <option key={c}>{c}</option>)}
         </select>
@@ -121,20 +121,29 @@ export default function Notas() {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center h-48">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="bg-white rounded-xl border border-slate-200 p-4 animate-pulse">
+              <div className="h-3 bg-slate-200 rounded w-3/4 mb-3" />
+              <div className="space-y-1.5 mb-4">
+                <div className="h-2.5 bg-slate-100 rounded w-full" />
+                <div className="h-2.5 bg-slate-100 rounded w-5/6" />
+              </div>
+              <div className="h-5 bg-slate-100 rounded w-16" />
+            </div>
+          ))}
         </div>
       ) : notes.length === 0 ? (
-        <div className="flex flex-col items-center justify-center h-48 text-gray-400">
-          <FileText size={36} className="mb-2" />
-          <p>No hay notas. ¡Crea la primera!</p>
+        <div className="flex flex-col items-center justify-center h-48 text-slate-400">
+          <FileText size={36} className="mb-2.5" />
+          <p className="text-sm">No hay notas. ¡Crea la primera!</p>
         </div>
       ) : (
-        <div className="space-y-5">
+        <div className="space-y-6">
           {pinned.length > 0 && (
             <div>
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-1.5">
-                <Pin size={12} /> Fijadas
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                <Pin size={11} /> Fijadas
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {pinned.map(n => <NoteCard key={n.id} note={n} />)}
@@ -143,7 +152,7 @@ export default function Notas() {
           )}
           {unpinned.length > 0 && (
             <div>
-              {pinned.length > 0 && <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Otras notas</p>}
+              {pinned.length > 0 && <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Otras notas</p>}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {unpinned.map(n => <NoteCard key={n.id} note={n} />)}
               </div>
@@ -159,15 +168,15 @@ export default function Notas() {
             <div className="flex gap-2 flex-wrap">
               {viewNote.category && <Badge variant={catColor(viewNote.category)}>{viewNote.category}</Badge>}
               {Array.isArray(viewNote.tags) && viewNote.tags.map(t => (
-                <span key={t} className="text-xs text-gray-500">#{t}</span>
+                <span key={t} className="text-xs text-slate-400">#{t}</span>
               ))}
             </div>
             {viewNote.content && (
-              <pre className="whitespace-pre-wrap text-sm text-gray-700 font-sans leading-relaxed bg-gray-50 rounded-lg p-4 max-h-80 overflow-y-auto">
+              <pre className="whitespace-pre-wrap text-sm text-slate-700 font-sans leading-relaxed bg-slate-50 rounded-xl p-4 max-h-80 overflow-y-auto scrollbar-thin">
                 {viewNote.content}
               </pre>
             )}
-            <p className="text-xs text-gray-400">Actualizado: {formatDate(viewNote.updated_at)}</p>
+            <p className="text-xs text-slate-400">Actualizado: {formatDate(viewNote.updated_at)}</p>
             <div className="flex justify-between pt-2">
               <div className="flex gap-2">
                 <Button variant="ghost" size="sm" icon={Pin} onClick={() => { togglePin(viewNote); setViewNote(null); }}>
@@ -199,8 +208,8 @@ export default function Notas() {
           <div className="flex items-center gap-2">
             <input type="checkbox" id="pinned" checked={form.is_pinned}
               onChange={e => setForm(p => ({ ...p, is_pinned: e.target.checked }))}
-              className="w-4 h-4 rounded border-gray-300 text-indigo-600" />
-            <label htmlFor="pinned" className="text-sm text-gray-700">Fijar nota</label>
+              className="w-4 h-4 rounded border-slate-300 text-indigo-600" />
+            <label htmlFor="pinned" className="text-sm text-slate-700">Fijar nota</label>
           </div>
           <div className="flex justify-end gap-3 pt-2">
             <Button variant="secondary" onClick={() => setModalOpen(false)} type="button">Cancelar</Button>
@@ -211,8 +220,8 @@ export default function Notas() {
 
       <Modal isOpen={!!deleteId} onClose={() => setDeleteId(null)} title="Eliminar Nota" size="sm">
         <div className="flex items-start gap-3 mb-5">
-          <AlertTriangle size={22} className="text-red-500 flex-shrink-0" />
-          <p className="text-sm text-gray-600">¿Eliminar esta nota? Esta acción no se puede deshacer.</p>
+          <AlertTriangle size={20} className="text-red-500 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-slate-600">¿Eliminar esta nota? Esta acción no se puede deshacer.</p>
         </div>
         <div className="flex justify-end gap-3">
           <Button variant="secondary" onClick={() => setDeleteId(null)}>Cancelar</Button>

@@ -6,6 +6,7 @@ import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
 import Badge from '../components/ui/Badge';
+import { TableSkeleton } from '../components/ui/Skeleton';
 import { formatCurrency, formatPercent, formatDate } from '../utils/formatters';
 
 const EMPTY = {
@@ -13,7 +14,6 @@ const EMPTY = {
   precio_costo: '', precio_venta: '', import_cost_per_unit: '', packaging_cost: '',
   stock_actual: '', stock_minimo: '', lot_number: '', expiry_date: ''
 };
-
 const CATEGORIAS = ['Velas', 'Perfumes', 'Difusores', 'Jabones', 'Kits', 'Accesorios', 'Esencias', 'Otro'];
 
 export default function Productos() {
@@ -26,7 +26,6 @@ export default function Productos() {
   const [editId, setEditId] = useState(null);
   const [saving, setSaving] = useState(false);
   const [filters, setFilters] = useState({ q: '', categoria: '', proveedor: '' });
-  const [error, setError] = useState('');
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
@@ -39,7 +38,7 @@ export default function Productos() {
       setProducts(res.data.data);
       setTotal(res.data.total);
     } catch (err) {
-      setError('Error al cargar productos');
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -65,11 +64,8 @@ export default function Productos() {
     e.preventDefault();
     setSaving(true);
     try {
-      if (editId) {
-        await api.put(`/products/${editId}`, form);
-      } else {
-        await api.post('/products', form);
-      }
+      if (editId) await api.put(`/products/${editId}`, form);
+      else await api.post('/products', form);
       setModalOpen(false);
       fetchProducts();
     } catch (err) {
@@ -90,96 +86,90 @@ export default function Productos() {
   };
 
   const f = (k) => (e) => setForm(prev => ({ ...prev, [k]: e.target.value }));
-
   const margen = parseFloat(form.precio_venta) > 0
     ? ((parseFloat(form.precio_venta) - parseFloat(form.precio_costo)) / parseFloat(form.precio_venta) * 100)
     : 0;
 
+  const stockBadge = (p) => {
+    if (p.stock_actual === 0) return <Badge variant="red">Sin stock</Badge>;
+    if (p.stock_actual <= p.stock_minimo) return <Badge variant="yellow">Stock bajo</Badge>;
+    return <Badge variant="green">OK</Badge>;
+  };
+
   return (
     <div>
-      {/* Barra de filtros y acciones */}
-      <div className="flex flex-wrap items-center gap-3 mb-5">
-        <div className="flex-1 min-w-48 relative">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+      {/* Filtros */}
+      <div className="flex flex-wrap items-center gap-2.5 mb-5">
+        <div className="flex-1 min-w-40 relative">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             placeholder="Buscar por nombre, SKU..."
             value={filters.q}
             onChange={e => setFilters(p => ({ ...p, q: e.target.value }))}
-            className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white hover:border-slate-400 transition-colors"
           />
         </div>
         <select value={filters.categoria} onChange={e => setFilters(p => ({ ...p, categoria: e.target.value }))}
-          className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+          className="text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white hover:border-slate-400 transition-colors">
           <option value="">Todas las categorías</option>
           {CATEGORIAS.map(c => <option key={c}>{c}</option>)}
         </select>
         <Button icon={Plus} onClick={openCreate}>Nuevo Producto</Button>
       </div>
 
-      <p className="text-xs text-gray-500 mb-3">{total} producto{total !== 1 ? 's' : ''}</p>
+      <p className="text-xs text-slate-400 mb-3">{total} producto{total !== 1 ? 's' : ''}</p>
 
-      {/* Tabla */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        {loading ? (
-          <div className="flex items-center justify-center h-48">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
-          </div>
-        ) : products.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-48 text-gray-400">
-            <Package size={36} className="mb-2" />
-            <p>No hay productos</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-100">
+      {loading ? (
+        <TableSkeleton rows={6} cols={6} />
+      ) : products.length === 0 ? (
+        <div className="bg-white rounded-xl border border-slate-200 shadow-card flex flex-col items-center justify-center h-48 text-slate-400">
+          <Package size={32} className="mb-2.5" />
+          <p className="text-sm">No hay productos</p>
+        </div>
+      ) : (
+        <div className="bg-white rounded-xl border border-slate-200 shadow-card overflow-hidden">
+          {/* Desktop table */}
+          <div className="hidden sm:block overflow-x-auto">
+            <table className="min-w-full divide-y divide-slate-100">
               <thead>
-                <tr className="bg-gray-50">
-                  {['SKU', 'Nombre', 'Categoría', 'Costo', 'Venta', 'Margen', 'Stock', 'Estado'].map(h => (
-                    <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">{h}</th>
+                <tr className="bg-slate-50">
+                  {['SKU', 'Nombre', 'Categoría', 'Costo', 'Venta', 'Margen', 'Stock', 'Estado', ''].map(h => (
+                    <th key={h} className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">{h}</th>
                   ))}
-                  <th className="px-4 py-3" />
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-slate-50">
                 {products.map(p => (
-                  <tr key={p.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-3 text-sm font-mono text-gray-600">{p.sku}</td>
+                  <tr key={p.id} className="hover:bg-slate-50 transition-colors group">
+                    <td className="px-4 py-3 text-xs font-mono text-slate-500">{p.sku}</td>
                     <td className="px-4 py-3">
-                      <div className="text-sm font-medium text-gray-900">{p.nombre}</div>
-                      {p.aroma && <div className="text-xs text-gray-500">{p.aroma} {p.variant && `· ${p.variant}`}</div>}
+                      <div className="text-sm font-medium text-slate-900">{p.nombre}</div>
+                      {p.aroma && <div className="text-xs text-slate-400">{p.aroma}{p.variant && ` · ${p.variant}`}</div>}
                     </td>
                     <td className="px-4 py-3">
                       {p.categoria && <Badge variant="blue">{p.categoria}</Badge>}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-700">{formatCurrency(p.precio_costo)}</td>
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900">{formatCurrency(p.precio_venta)}</td>
+                    <td className="px-4 py-3 text-sm text-slate-600">{formatCurrency(p.precio_costo)}</td>
+                    <td className="px-4 py-3 text-sm font-medium text-slate-900">{formatCurrency(p.precio_venta)}</td>
                     <td className="px-4 py-3 text-sm">
-                      <span className={parseFloat(p.margen) >= 50 ? 'text-green-600 font-medium' : 'text-gray-600'}>
+                      <span className={parseFloat(p.margen) >= 50 ? 'text-emerald-600 font-medium' : 'text-slate-600'}>
                         {formatPercent(p.margen)}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-sm">
-                      <span className={p.stock_actual <= p.stock_minimo ? 'text-red-600 font-medium' : 'text-gray-700'}>
+                      <span className={p.stock_actual <= p.stock_minimo ? 'text-red-600 font-medium' : 'text-slate-700'}>
                         {p.stock_actual}
                       </span>
-                      <span className="text-gray-400"> / {p.stock_minimo}</span>
+                      <span className="text-slate-300"> / {p.stock_minimo}</span>
                     </td>
+                    <td className="px-4 py-3">{stockBadge(p)}</td>
                     <td className="px-4 py-3">
-                      {p.stock_actual === 0 ? (
-                        <Badge variant="red">Sin stock</Badge>
-                      ) : p.stock_actual <= p.stock_minimo ? (
-                        <Badge variant="yellow">Stock bajo</Badge>
-                      ) : (
-                        <Badge variant="green">OK</Badge>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <button onClick={() => openEdit(p)} className="text-gray-400 hover:text-indigo-600 transition-colors">
-                          <Edit2 size={15} />
+                      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => openEdit(p)} className="text-slate-400 hover:text-indigo-600 transition-colors p-1 rounded hover:bg-indigo-50">
+                          <Edit2 size={14} />
                         </button>
-                        <button onClick={() => setDeleteId(p.id)} className="text-gray-400 hover:text-red-600 transition-colors">
-                          <Trash2 size={15} />
+                        <button onClick={() => setDeleteId(p.id)} className="text-slate-400 hover:text-red-600 transition-colors p-1 rounded hover:bg-red-50">
+                          <Trash2 size={14} />
                         </button>
                       </div>
                     </td>
@@ -188,8 +178,38 @@ export default function Productos() {
               </tbody>
             </table>
           </div>
-        )}
-      </div>
+
+          {/* Mobile cards */}
+          <div className="sm:hidden divide-y divide-slate-100">
+            {products.map(p => (
+              <div key={p.id} className="px-4 py-3.5">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-medium text-slate-900">{p.nombre}</p>
+                      {stockBadge(p)}
+                    </div>
+                    <p className="text-xs text-slate-400 mt-0.5 font-mono">{p.sku}{p.aroma && ` · ${p.aroma}`}</p>
+                    <div className="flex items-center gap-3 mt-2 flex-wrap">
+                      <span className="text-sm font-semibold text-slate-900">{formatCurrency(p.precio_venta)}</span>
+                      <span className="text-xs text-emerald-600 font-medium">{formatPercent(p.margen)} margen</span>
+                      <span className="text-xs text-slate-500">Stock: {p.stock_actual}</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-1 flex-shrink-0">
+                    <button onClick={() => openEdit(p)} className="text-slate-400 hover:text-indigo-600 p-1.5 rounded hover:bg-indigo-50 transition-colors">
+                      <Edit2 size={15} />
+                    </button>
+                    <button onClick={() => setDeleteId(p.id)} className="text-slate-400 hover:text-red-600 p-1.5 rounded hover:bg-red-50 transition-colors">
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Modal crear/editar */}
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)}
@@ -217,7 +237,7 @@ export default function Productos() {
             <div>
               <Input label="Precio Venta ($)" type="number" step="0.01" value={form.precio_venta} onChange={f('precio_venta')} />
               {parseFloat(form.precio_venta) > 0 && (
-                <p className="text-xs text-green-600 mt-1">Margen: {margen.toFixed(1)}%</p>
+                <p className="text-xs text-emerald-600 mt-1">Margen: {margen.toFixed(1)}%</p>
               )}
             </div>
           </div>
@@ -241,11 +261,10 @@ export default function Productos() {
         </form>
       </Modal>
 
-      {/* Modal eliminar */}
       <Modal isOpen={!!deleteId} onClose={() => setDeleteId(null)} title="Eliminar Producto" size="sm">
         <div className="flex items-start gap-3 mb-5">
-          <AlertTriangle size={22} className="text-red-500 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-gray-600">¿Estás seguro de que deseas eliminar este producto? Esta acción no se puede deshacer.</p>
+          <AlertTriangle size={20} className="text-red-500 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-slate-600">¿Estás seguro de que deseas eliminar este producto? Esta acción no se puede deshacer.</p>
         </div>
         <div className="flex justify-end gap-3">
           <Button variant="secondary" onClick={() => setDeleteId(null)}>Cancelar</Button>

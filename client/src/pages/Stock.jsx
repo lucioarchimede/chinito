@@ -6,6 +6,7 @@ import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
 import Badge from '../components/ui/Badge';
+import { TableSkeleton } from '../components/ui/Skeleton';
 import { formatCurrency, formatDate, today } from '../utils/formatters';
 
 const EMPTY = { product_id: '', movement_type: 'entrada', quantity: '', reason: '', notes: '', movement_date: today() };
@@ -54,39 +55,39 @@ export default function Stock() {
   const f = (k) => (e) => setForm(p => ({ ...p, [k]: e.target.value }));
 
   const tabs = [
-    { id: 'levels', label: 'Niveles de Stock' },
+    { id: 'levels', label: 'Niveles' },
     { id: 'movements', label: 'Movimientos' },
-    { id: 'alerts', label: `Alertas ${alerts.length > 0 ? `(${alerts.length})` : ''}` },
+    { id: 'alerts', label: `Alertas${alerts.length > 0 ? ` (${alerts.length})` : ''}` },
   ];
+
+  const stockValue = levels.reduce((s, p) => s + parseFloat(p.valor_stock_costo || 0), 0);
 
   return (
     <div>
-      {/* Stats rápidos */}
-      <div className="grid grid-cols-3 gap-4 mb-5">
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-          <p className="text-xs text-gray-500 uppercase">Total SKUs</p>
-          <p className="text-2xl font-bold text-gray-900 mt-1">{levels.length}</p>
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-5">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-card p-4">
+          <p className="text-xs text-slate-500 uppercase tracking-wide">Total SKUs</p>
+          <p className="text-xl font-bold text-slate-900 mt-1">{levels.length}</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-          <p className="text-xs text-gray-500 uppercase">Valor Stock (costo)</p>
-          <p className="text-2xl font-bold text-indigo-600 mt-1">
-            {formatCurrency(levels.reduce((s, p) => s + parseFloat(p.valor_stock_costo || 0), 0))}
-          </p>
+        <div className="bg-white rounded-xl border border-slate-200 shadow-card p-4">
+          <p className="text-xs text-slate-500 uppercase tracking-wide">Valor Stock</p>
+          <p className="text-xl font-bold text-indigo-600 mt-1">{formatCurrency(stockValue)}</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-          <p className="text-xs text-gray-500 uppercase">Bajo Mínimo</p>
-          <p className={`text-2xl font-bold mt-1 ${alerts.length > 0 ? 'text-red-600' : 'text-green-600'}`}>
-            {alerts.length} producto{alerts.length !== 1 ? 's' : ''}
+        <div className="bg-white rounded-xl border border-slate-200 shadow-card p-4">
+          <p className="text-xs text-slate-500 uppercase tracking-wide">Bajo Mínimo</p>
+          <p className={`text-xl font-bold mt-1 ${alerts.length > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+            {alerts.length} prod.
           </p>
         </div>
       </div>
 
       {/* Tabs + acción */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
+      <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
+        <div className="flex border border-slate-200 rounded-lg overflow-hidden bg-white shadow-card">
           {tabs.map(t => (
             <button key={t.id} onClick={() => setTab(t.id)}
-              className={`px-4 py-2 text-sm font-medium transition-colors ${tab === t.id ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:bg-gray-50'}`}>
+              className={`px-3 sm:px-4 py-2 text-sm font-medium transition-colors ${tab === t.id ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>
               {t.label}
             </button>
           ))}
@@ -94,35 +95,31 @@ export default function Stock() {
         <Button icon={Plus} onClick={() => setModalOpen(true)}>Registrar Movimiento</Button>
       </div>
 
-      {/* Contenido según tab */}
       {loading ? (
-        <div className="flex items-center justify-center h-48">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
-        </div>
+        <TableSkeleton rows={6} cols={5} />
       ) : tab === 'levels' ? (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-100">
-              <thead className="bg-gray-50">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-card overflow-hidden">
+          <div className="hidden sm:block overflow-x-auto">
+            <table className="min-w-full divide-y divide-slate-100">
+              <thead className="bg-slate-50">
                 <tr>
-                  {['SKU', 'Producto', 'Categoría', 'Stock Actual', 'Stock Mínimo', 'Valor Costo', 'Valor Venta', 'Estado'].map(h => (
-                    <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{h}</th>
+                  {['SKU', 'Producto', 'Categoría', 'Stock', 'Mínimo', 'Valor Costo', 'Valor Venta', 'Estado'].map(h => (
+                    <th key={h} className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-slate-50">
                 {levels.map(p => (
-                  <tr key={p.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm font-mono text-gray-600">{p.sku}</td>
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900">{p.nombre}</td>
+                  <tr key={p.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-4 py-3 text-xs font-mono text-slate-500">{p.sku}</td>
+                    <td className="px-4 py-3 text-sm font-medium text-slate-900">{p.nombre}</td>
                     <td className="px-4 py-3">{p.categoria && <Badge variant="blue">{p.categoria}</Badge>}</td>
-                    <td className="px-4 py-3 text-sm font-semibold"
-                      style={{ color: p.stock_actual <= p.stock_minimo ? '#dc2626' : '#16a34a' }}>
+                    <td className="px-4 py-3 text-sm font-semibold" style={{ color: p.stock_actual <= p.stock_minimo ? '#dc2626' : '#16a34a' }}>
                       {p.stock_actual}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-500">{p.stock_minimo}</td>
-                    <td className="px-4 py-3 text-sm text-gray-700">{formatCurrency(p.valor_stock_costo)}</td>
-                    <td className="px-4 py-3 text-sm text-gray-700">{formatCurrency(p.valor_stock_venta)}</td>
+                    <td className="px-4 py-3 text-sm text-slate-400">{p.stock_minimo}</td>
+                    <td className="px-4 py-3 text-sm text-slate-700">{formatCurrency(p.valor_stock_costo)}</td>
+                    <td className="px-4 py-3 text-sm text-slate-700">{formatCurrency(p.valor_stock_venta)}</td>
                     <td className="px-4 py-3">
                       {p.stock_actual === 0 ? <Badge variant="red">Sin stock</Badge>
                         : p.bajo_minimo ? <Badge variant="yellow">Bajo mínimo</Badge>
@@ -133,56 +130,96 @@ export default function Stock() {
               </tbody>
             </table>
           </div>
+          {/* Mobile */}
+          <div className="sm:hidden divide-y divide-slate-100">
+            {levels.map(p => (
+              <div key={p.id} className="px-4 py-3.5">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-medium text-slate-900">{p.nombre}</p>
+                      {p.stock_actual === 0 ? <Badge variant="red">Sin stock</Badge>
+                        : p.bajo_minimo ? <Badge variant="yellow">Bajo</Badge>
+                        : <Badge variant="green">OK</Badge>}
+                    </div>
+                    <p className="text-xs font-mono text-slate-400 mt-0.5">{p.sku}</p>
+                    <div className="flex gap-3 mt-1.5 text-sm">
+                      <span className={`font-semibold ${p.stock_actual <= p.stock_minimo ? 'text-red-600' : 'text-emerald-600'}`}>Stock: {p.stock_actual}</span>
+                      <span className="text-slate-400">Mín: {p.stock_minimo}</span>
+                      <span className="text-slate-600">{formatCurrency(p.valor_stock_costo)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       ) : tab === 'movements' ? (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-100">
-              <thead className="bg-gray-50">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-card overflow-hidden">
+          <div className="hidden sm:block overflow-x-auto">
+            <table className="min-w-full divide-y divide-slate-100">
+              <thead className="bg-slate-50">
                 <tr>
                   {['Fecha', 'Producto', 'Tipo', 'Cantidad', 'Motivo', 'Notas'].map(h => (
-                    <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{h}</th>
+                    <th key={h} className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-slate-50">
                 {movements.map(m => (
-                  <tr key={m.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm text-gray-600">{formatDate(m.movement_date)}</td>
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900">{m.product_nombre || '—'}</td>
+                  <tr key={m.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-4 py-3 text-sm text-slate-500">{formatDate(m.movement_date)}</td>
+                    <td className="px-4 py-3 text-sm font-medium text-slate-900">{m.product_nombre || '—'}</td>
                     <td className="px-4 py-3">
                       <Badge variant={m.movement_type === 'entrada' ? 'green' : m.movement_type === 'salida' ? 'red' : 'yellow'}>
                         {m.movement_type}
                       </Badge>
                     </td>
-                    <td className="px-4 py-3 text-sm font-medium"
-                      style={{ color: m.movement_type === 'entrada' ? '#16a34a' : '#dc2626' }}>
+                    <td className="px-4 py-3 text-sm font-medium" style={{ color: m.movement_type === 'entrada' ? '#16a34a' : '#dc2626' }}>
                       {m.movement_type === 'entrada' ? '+' : m.movement_type === 'salida' ? '-' : '~'}{m.quantity}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{m.reason || '—'}</td>
-                    <td className="px-4 py-3 text-sm text-gray-500">{m.notes || '—'}</td>
+                    <td className="px-4 py-3 text-sm text-slate-600">{m.reason || '—'}</td>
+                    <td className="px-4 py-3 text-sm text-slate-400">{m.notes || '—'}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+          {/* Mobile */}
+          <div className="sm:hidden divide-y divide-slate-100">
+            {movements.map(m => (
+              <div key={m.id} className="px-4 py-3.5">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">{m.product_nombre || '—'}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">{formatDate(m.movement_date)}{m.reason && ` · ${m.reason}`}</p>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <Badge variant={m.movement_type === 'entrada' ? 'green' : m.movement_type === 'salida' ? 'red' : 'yellow'}>
+                      {m.movement_type === 'entrada' ? '+' : '-'}{m.quantity}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       ) : (
         <div className="space-y-3">
           {alerts.length === 0 ? (
-            <div className="bg-green-50 border border-green-200 rounded-xl p-8 text-center">
-              <p className="text-green-700 font-medium">¡Sin alertas! Todos los productos tienen stock suficiente.</p>
+            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-8 text-center">
+              <p className="text-emerald-700 font-medium text-sm">¡Sin alertas! Todos los productos tienen stock suficiente.</p>
             </div>
           ) : alerts.map(p => (
-            <div key={p.id} className="bg-white rounded-xl border border-red-200 shadow-sm p-4 flex items-center gap-4">
-              <AlertTriangle size={20} className="text-red-500 flex-shrink-0" />
-              <div className="flex-1">
-                <p className="font-medium text-gray-900">{p.nombre}</p>
-                <p className="text-sm text-gray-500">SKU: {p.sku} · Categoría: {p.categoria}</p>
+            <div key={p.id} className="bg-white rounded-xl border border-red-200 shadow-card p-4 flex items-center gap-4">
+              <AlertTriangle size={18} className="text-red-500 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-slate-900 text-sm">{p.nombre}</p>
+                <p className="text-xs text-slate-400">SKU: {p.sku} · {p.categoria}</p>
               </div>
-              <div className="text-right">
+              <div className="text-right flex-shrink-0">
                 <p className="text-2xl font-bold text-red-600">{p.stock_actual}</p>
-                <p className="text-xs text-gray-500">mínimo: {p.stock_minimo}</p>
+                <p className="text-xs text-slate-400">mín: {p.stock_minimo}</p>
                 <p className="text-xs text-red-500 font-medium">Falta: {p.deficit}</p>
               </div>
             </div>

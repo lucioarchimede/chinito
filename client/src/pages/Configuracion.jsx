@@ -6,6 +6,7 @@ import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
 import Badge from '../components/ui/Badge';
+import { Skeleton } from '../components/ui/Skeleton';
 import { formatDate } from '../utils/formatters';
 
 export default function Configuracion() {
@@ -82,44 +83,46 @@ export default function Configuracion() {
     ...(user?.role === 'admin' ? [{ id: 'users', label: 'Usuarios', icon: Users }] : []),
   ];
 
+  const SuccessMsg = ({ msg }) => msg ? (
+    <div className="flex items-center gap-2 text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-3 mb-4 text-sm">
+      <CheckCircle size={15} /> {msg}
+    </div>
+  ) : null;
+
+  const ErrorMsg = ({ msg }) => msg ? (
+    <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 mb-4 text-sm">{msg}</div>
+  ) : null;
+
   return (
     <div className="max-w-2xl">
       {/* Tabs */}
-      <div className="flex border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm mb-5">
+      <div className="flex border border-slate-200 rounded-xl overflow-hidden bg-white shadow-card mb-5">
         {tabs.map(({ id, label, icon: Icon }) => (
           <button key={id} onClick={() => setTab(id)}
-            className={`flex items-center gap-2 flex-1 px-4 py-2.5 text-sm font-medium transition-colors ${tab === id ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:bg-gray-50'}`}>
-            <Icon size={15} />{label}
+            className={`flex items-center justify-center gap-2 flex-1 px-4 py-2.5 text-sm font-medium transition-colors ${tab === id ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>
+            <Icon size={14} />{label}
           </button>
         ))}
       </div>
 
       {/* Perfil */}
       {tab === 'profile' && (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-          <h2 className="text-base font-semibold text-gray-900 mb-5">Información de perfil</h2>
-          {profileMsg && (
-            <div className="flex items-center gap-2 text-green-700 bg-green-50 border border-green-200 rounded-lg px-4 py-3 mb-4 text-sm">
-              <CheckCircle size={16} /> {profileMsg}
-            </div>
-          )}
-          {profileError && (
-            <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 mb-4 text-sm">{profileError}</div>
-          )}
+        <div className="bg-white rounded-xl border border-slate-200 shadow-card p-6">
+          <h2 className="text-base font-semibold text-slate-900 mb-5">Información de perfil</h2>
+          <SuccessMsg msg={profileMsg} />
+          <ErrorMsg msg={profileError} />
           <form onSubmit={handleSaveProfile} className="space-y-4">
             <Input label="Nombre" value={profile.name} onChange={e => setProfile(p => ({ ...p, name: e.target.value }))} required />
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <p className="text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">{user?.email}</p>
-              <p className="text-xs text-gray-400 mt-1">El email no se puede modificar</p>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
+              <p className="text-sm text-slate-600 bg-slate-50 px-3 py-2 rounded-lg border border-slate-200">{user?.email}</p>
+              <p className="text-xs text-slate-400 mt-1">El email no se puede modificar</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Rol</label>
-              <div className="flex items-center gap-2">
-                <Badge variant={user?.role === 'admin' ? 'indigo' : 'gray'} className="capitalize text-sm px-3 py-1">
-                  {user?.role}
-                </Badge>
-              </div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Rol</label>
+              <Badge variant={user?.role === 'admin' ? 'indigo' : 'gray'} className="capitalize text-xs px-3 py-1">
+                {user?.role}
+              </Badge>
             </div>
             <Button type="submit" disabled={savingProfile}>
               {savingProfile ? 'Guardando...' : 'Guardar cambios'}
@@ -130,16 +133,10 @@ export default function Configuracion() {
 
       {/* Contraseña */}
       {tab === 'security' && (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-          <h2 className="text-base font-semibold text-gray-900 mb-5">Cambiar contraseña</h2>
-          {profileMsg && (
-            <div className="flex items-center gap-2 text-green-700 bg-green-50 border border-green-200 rounded-lg px-4 py-3 mb-4 text-sm">
-              <CheckCircle size={16} /> {profileMsg}
-            </div>
-          )}
-          {profileError && (
-            <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 mb-4 text-sm">{profileError}</div>
-          )}
+        <div className="bg-white rounded-xl border border-slate-200 shadow-card p-6">
+          <h2 className="text-base font-semibold text-slate-900 mb-5">Cambiar contraseña</h2>
+          <SuccessMsg msg={profileMsg} />
+          <ErrorMsg msg={profileError} />
           <form onSubmit={handleSaveProfile} className="space-y-4">
             <Input label="Contraseña actual" type="password"
               value={profile.currentPassword}
@@ -157,14 +154,14 @@ export default function Configuracion() {
         </div>
       )}
 
-      {/* Gestión de usuarios (admin) */}
+      {/* Gestión de usuarios */}
       {tab === 'users' && user?.role === 'admin' && (
         <div className="space-y-5">
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-            <h2 className="text-base font-semibold text-gray-900 mb-4">Crear nuevo usuario</h2>
+          <div className="bg-white rounded-xl border border-slate-200 shadow-card p-6">
+            <h2 className="text-base font-semibold text-slate-900 mb-4">Crear nuevo usuario</h2>
             {userMsg && (
-              <div className="flex items-center gap-2 text-green-700 bg-green-50 border border-green-200 rounded-lg px-4 py-3 mb-4 text-sm">
-                <CheckCircle size={16} /> {userMsg}
+              <div className="flex items-center gap-2 text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-3 mb-4 text-sm">
+                <CheckCircle size={15} /> {userMsg}
               </div>
             )}
             <form onSubmit={handleCreateUser} className="space-y-4">
@@ -189,28 +186,36 @@ export default function Configuracion() {
             </form>
           </div>
 
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            <div className="px-5 py-3 border-b border-gray-100">
-              <h3 className="text-sm font-semibold text-gray-700">Usuarios del sistema</h3>
+          <div className="bg-white rounded-xl border border-slate-200 shadow-card overflow-hidden">
+            <div className="px-5 py-3.5 border-b border-slate-100">
+              <h3 className="text-sm font-semibold text-slate-700">Usuarios del sistema</h3>
             </div>
             {loadingUsers ? (
-              <div className="flex items-center justify-center h-24">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600" />
+              <div className="divide-y divide-slate-100">
+                {[1,2,3].map(i => (
+                  <div key={i} className="flex items-center gap-3 px-5 py-3.5">
+                    <Skeleton className="w-8 h-8 rounded-full flex-shrink-0" />
+                    <div className="flex-1 space-y-1.5">
+                      <Skeleton className="h-3 w-28" />
+                      <Skeleton className="h-2.5 w-40" />
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : (
-              <ul className="divide-y divide-gray-100">
+              <ul className="divide-y divide-slate-100">
                 {users.map(u => (
-                  <li key={u.id} className="flex items-center gap-3 px-5 py-3">
+                  <li key={u.id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-slate-50 transition-colors">
                     <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-sm flex-shrink-0">
                       {u.name[0].toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900">{u.name}</p>
-                      <p className="text-xs text-gray-500">{u.email}</p>
+                      <p className="text-sm font-medium text-slate-900">{u.name}</p>
+                      <p className="text-xs text-slate-400">{u.email}</p>
                     </div>
                     <div className="text-right flex-shrink-0">
                       <Badge variant={u.role === 'admin' ? 'indigo' : 'gray'} className="capitalize">{u.role}</Badge>
-                      <p className="text-xs text-gray-400 mt-1">{formatDate(u.created_at)}</p>
+                      <p className="text-xs text-slate-400 mt-1">{formatDate(u.created_at)}</p>
                     </div>
                   </li>
                 ))}
