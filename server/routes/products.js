@@ -40,6 +40,42 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET /api/products/profitability
+router.get('/profitability', async (req, res) => {
+  try {
+    const { start_date, end_date, limit = 50 } = req.query;
+    const now = new Date();
+    const start = start_date || new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+    const end = end_date || now.toISOString().split('T')[0];
+
+    const result = await db.query(
+      `SELECT
+         p.id, p.sku, p.nombre, p.categoria, p.precio_costo, p.precio_venta,
+         COALESCE(SUM(s.quantity), 0)::int as units_sold,
+         COALESCE(SUM(s.final_revenue), 0) as revenue,
+         COALESCE(SUM(s.quantity * p.precio_costo), 0) as cogs,
+         COALESCE(SUM(s.final_revenue) - SUM(s.quantity * p.precio_costo), 0) as gross_profit,
+         COALESCE(AVG(s.final_revenue / NULLIF(s.quantity, 0)), p.precio_venta) as avg_sale_price,
+         CASE
+           WHEN COALESCE(SUM(s.final_revenue), 0) > 0
+           THEN ROUND(((SUM(s.final_revenue) - SUM(s.quantity * p.precio_costo)) / SUM(s.final_revenue) * 100)::numeric, 2)
+           ELSE CASE WHEN p.precio_venta > 0 THEN ROUND(((p.precio_venta - p.precio_costo) / p.precio_venta * 100)::numeric, 2) ELSE 0 END
+         END as margin_pct
+       FROM products p
+       LEFT JOIN sales s ON s.product_id = p.id AND s.sale_date >= $1 AND s.sale_date <= $2
+       WHERE p.active = true
+       GROUP BY p.id, p.sku, p.nombre, p.categoria, p.precio_costo, p.precio_venta
+       ORDER BY gross_profit DESC
+       LIMIT $3`,
+      [start, end, limit]
+    );
+    res.json({ data: result.rows, period: { start, end } });
+  } catch (err) {
+    console.error('[products/profitability]', err);
+    res.status(500).json({ error: 'Error al obtener rentabilidad' });
+  }
+});
+
 // GET /api/products/categories
 router.get('/categories', async (req, res) => {
   try {

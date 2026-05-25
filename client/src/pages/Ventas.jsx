@@ -18,7 +18,7 @@ const EMPTY = {
 const CHANNELS = ['MercadoLibre', 'Instagram', 'WhatsApp', 'TiendaNube', 'Local', 'Otro'];
 const PAYMENTS = ['MercadoPago', 'Transferencia', 'Efectivo', 'Tarjeta', 'Otro'];
 
-const dateInputCls = 'text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white hover:border-slate-400 transition-colors';
+const dateInputCls = 'text-sm border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-500 transition-colors text-slate-900 dark:text-slate-100 min-h-[42px]';
 
 export default function Ventas() {
   const [sales, setSales] = useState([]);
@@ -102,9 +102,9 @@ export default function Ventas() {
             { label: 'Ticket Prom.', value: formatCurrency(summary.avg_ticket) },
             { label: 'Unidades', value: summary.total_units },
           ].map(({ label, value }) => (
-            <div key={label} className="bg-white rounded-xl border border-slate-200 shadow-card p-4">
-              <p className="text-xs text-slate-500 uppercase tracking-wide">{label}</p>
-              <p className="text-xl font-bold text-slate-900 mt-1">{value}</p>
+            <div key={label} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-card p-4">
+              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">{label}</p>
+              <p className="text-xl font-bold text-slate-900 dark:text-slate-50 mt-1">{value}</p>
             </div>
           ))}
         </div>
@@ -124,44 +124,44 @@ export default function Ventas() {
       {loading ? (
         <TableSkeleton rows={6} cols={6} />
       ) : sales.length === 0 ? (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-card flex flex-col items-center justify-center h-48 text-slate-400">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-card flex flex-col items-center justify-center h-48 text-slate-400">
           <ShoppingCart size={32} className="mb-2.5" />
           <p className="text-sm">No hay ventas en este período</p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-card overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-card overflow-hidden">
           {/* Desktop table */}
           <div className="hidden sm:block overflow-x-auto">
-            <table className="min-w-full divide-y divide-slate-100">
-              <thead className="bg-slate-50">
+            <table className="min-w-full divide-y divide-slate-100 dark:divide-slate-800">
+              <thead className="bg-slate-50 dark:bg-slate-800">
                 <tr>
                   {['Fecha', 'Producto', 'Cliente', 'Canal', 'Cant.', 'Revenue', 'Pago', ''].map(h => (
-                    <th key={h} className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">{h}</th>
+                    <th key={h} className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50">
+              <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
                 {sales.map(s => (
-                  <tr key={s.id} className="hover:bg-slate-50 transition-colors group">
-                    <td className="px-4 py-3 text-sm text-slate-500">{formatDate(s.sale_date)}</td>
+                  <tr key={s.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
+                    <td className="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">{formatDate(s.sale_date)}</td>
                     <td className="px-4 py-3">
-                      <div className="text-sm font-medium text-slate-900">{s.product_nombre || '—'}</div>
-                      {s.product_sku && <div className="text-xs text-slate-400 font-mono">{s.product_sku}</div>}
+                      <div className="text-sm font-medium text-slate-900 dark:text-slate-100">{s.product_nombre || '—'}</div>
+                      {s.product_sku && <div className="text-xs text-slate-400 dark:text-slate-500 font-mono">{s.product_sku}</div>}
                     </td>
                     <td className="px-4 py-3">
-                      <div className="text-sm text-slate-700">{s.customer_name || '—'}</div>
+                      <div className="text-sm text-slate-700 dark:text-slate-300">{s.customer_name || '—'}</div>
                       {s.is_repeat_customer && <Badge variant="indigo" className="mt-0.5">Recurrente</Badge>}
                     </td>
                     <td className="px-4 py-3">
                       {s.sale_channel && <Badge variant={channelColor(s.sale_channel)}>{s.sale_channel}</Badge>}
                     </td>
-                    <td className="px-4 py-3 text-sm text-slate-700">{s.quantity}</td>
-                    <td className="px-4 py-3 text-sm font-semibold text-slate-900">{formatCurrency(s.final_revenue)}</td>
-                    <td className="px-4 py-3 text-sm text-slate-500">{s.payment_method || '—'}</td>
+                    <td className="px-4 py-3 text-sm text-slate-700 dark:text-slate-300">{s.quantity}</td>
+                    <td className="px-4 py-3 text-sm font-semibold text-slate-900 dark:text-slate-100">{formatCurrency(s.final_revenue)}</td>
+                    <td className="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">{s.payment_method || '—'}</td>
                     <td className="px-4 py-3">
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => openEdit(s)} className="text-slate-400 hover:text-indigo-600 p-1 rounded hover:bg-indigo-50 transition-colors"><Edit2 size={14} /></button>
-                        <button onClick={() => setDeleteId(s.id)} className="text-slate-400 hover:text-red-600 p-1 rounded hover:bg-red-50 transition-colors"><Trash2 size={14} /></button>
+                        <button onClick={() => openEdit(s)} className="text-slate-400 hover:text-indigo-600 p-1 rounded hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"><Edit2 size={14} /></button>
+                        <button onClick={() => setDeleteId(s.id)} className="text-slate-400 hover:text-red-600 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"><Trash2 size={14} /></button>
                       </div>
                     </td>
                   </tr>
@@ -171,21 +171,21 @@ export default function Ventas() {
           </div>
 
           {/* Mobile cards */}
-          <div className="sm:hidden divide-y divide-slate-100">
+          <div className="sm:hidden divide-y divide-slate-100 dark:divide-slate-800">
             {sales.map(s => (
               <div key={s.id} className="px-4 py-3.5">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-medium text-slate-900">{s.product_nombre || '—'}</p>
+                      <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{s.product_nombre || '—'}</p>
                       {s.sale_channel && <Badge variant={channelColor(s.sale_channel)}>{s.sale_channel}</Badge>}
                     </div>
-                    <p className="text-xs text-slate-400 mt-0.5">{formatDate(s.sale_date)} · {s.customer_name || 'Sin cliente'} · x{s.quantity}</p>
-                    <p className="text-sm font-semibold text-slate-900 mt-1">{formatCurrency(s.final_revenue)}</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{formatDate(s.sale_date)} · {s.customer_name || 'Sin cliente'} · x{s.quantity}</p>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 mt-1">{formatCurrency(s.final_revenue)}</p>
                   </div>
                   <div className="flex gap-1 flex-shrink-0">
-                    <button onClick={() => openEdit(s)} className="text-slate-400 hover:text-indigo-600 p-1.5 rounded hover:bg-indigo-50 transition-colors"><Edit2 size={15} /></button>
-                    <button onClick={() => setDeleteId(s.id)} className="text-slate-400 hover:text-red-600 p-1.5 rounded hover:bg-red-50 transition-colors"><Trash2 size={15} /></button>
+                    <button onClick={() => openEdit(s)} className="text-slate-400 hover:text-indigo-600 p-1.5 rounded hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"><Edit2 size={15} /></button>
+                    <button onClick={() => setDeleteId(s.id)} className="text-slate-400 hover:text-red-600 p-1.5 rounded hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"><Trash2 size={15} /></button>
                   </div>
                 </div>
               </div>
@@ -215,10 +215,10 @@ export default function Ventas() {
             <Input label="Envío ($)" type="number" step="0.01" value={form.shipping_cost} onChange={f('shipping_cost')} />
           </div>
           {grossSales > 0 && (
-            <div className="bg-indigo-50 rounded-lg p-3 text-sm grid grid-cols-3 gap-2">
-              <div><span className="text-slate-500">Venta Bruta:</span><br /><strong>{formatCurrency(grossSales)}</strong></div>
-              <div><span className="text-slate-500">Venta Neta:</span><br /><strong>{formatCurrency(netSales)}</strong></div>
-              <div><span className="text-slate-500">Revenue Final:</span><br /><strong className="text-indigo-700">{formatCurrency(finalRevenue)}</strong></div>
+            <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-lg p-3 text-sm grid grid-cols-3 gap-2 border border-indigo-100 dark:border-indigo-800">
+              <div><span className="text-slate-500 dark:text-slate-400">Venta Bruta:</span><br /><strong className="text-slate-900 dark:text-slate-100">{formatCurrency(grossSales)}</strong></div>
+              <div><span className="text-slate-500 dark:text-slate-400">Venta Neta:</span><br /><strong className="text-slate-900 dark:text-slate-100">{formatCurrency(netSales)}</strong></div>
+              <div><span className="text-slate-500 dark:text-slate-400">Revenue Final:</span><br /><strong className="text-indigo-700 dark:text-indigo-300">{formatCurrency(finalRevenue)}</strong></div>
             </div>
           )}
           <div className="grid grid-cols-3 gap-4">
@@ -238,8 +238,8 @@ export default function Ventas() {
             <div className="flex items-center mt-6">
               <input type="checkbox" id="repeat" checked={form.is_repeat_customer}
                 onChange={e => setForm(p => ({ ...p, is_repeat_customer: e.target.checked }))}
-                className="w-4 h-4 rounded border-slate-300 text-indigo-600" />
-              <label htmlFor="repeat" className="ml-2 text-sm text-slate-700">Cliente recurrente</label>
+                className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-indigo-600" />
+              <label htmlFor="repeat" className="ml-2 text-sm text-slate-700 dark:text-slate-300">Cliente recurrente</label>
             </div>
           </div>
           <Input label="Notas" value={form.notes} onChange={f('notes')} placeholder="Observaciones..." />
@@ -253,7 +253,7 @@ export default function Ventas() {
       <Modal isOpen={!!deleteId} onClose={() => setDeleteId(null)} title="Eliminar Venta" size="sm">
         <div className="flex items-start gap-3 mb-5">
           <AlertTriangle size={20} className="text-red-500 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-slate-600">¿Eliminar esta venta? Esta acción no se puede deshacer.</p>
+          <p className="text-sm text-slate-600 dark:text-slate-300">¿Eliminar esta venta? Esta acción no se puede deshacer.</p>
         </div>
         <div className="flex justify-end gap-3">
           <Button variant="secondary" onClick={() => setDeleteId(null)}>Cancelar</Button>

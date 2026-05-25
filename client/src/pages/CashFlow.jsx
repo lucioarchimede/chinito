@@ -9,9 +9,10 @@ import Select from '../components/ui/Select';
 import Badge from '../components/ui/Badge';
 import { TableSkeleton } from '../components/ui/Skeleton';
 import { formatCurrency, formatDate, formatDateInput, today, monthStart } from '../utils/formatters';
+import { useChartTheme } from '../context/ThemeContext';
 
 const EMPTY = { flow_date: today(), category: '', type: 'ingreso', amount: '', description: '', is_projected: false, notes: '' };
-const dateInputCls = 'text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white hover:border-slate-400 transition-colors';
+const dateInputCls = 'text-sm border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-500 transition-colors text-slate-900 dark:text-slate-100 min-h-[42px]';
 
 export default function CashFlow() {
   const [entries, setEntries] = useState([]);
@@ -23,6 +24,7 @@ export default function CashFlow() {
   const [editId, setEditId] = useState(null);
   const [saving, setSaving] = useState(false);
   const [filters, setFilters] = useState({ start_date: monthStart(), end_date: today(), type: '' });
+  const chart = useChartTheme();
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -76,29 +78,29 @@ export default function CashFlow() {
       {/* Summary */}
       {summary && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-5">
-          <div className="bg-white rounded-xl border border-slate-200 shadow-card p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-card p-4">
             <div className="flex items-center gap-1.5 mb-1">
               <TrendingUp size={14} className="text-emerald-500" />
-              <p className="text-xs text-slate-500 uppercase tracking-wide">Ingresos Reales</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Ingresos Reales</p>
             </div>
-            <p className="text-xl font-bold text-emerald-600">{formatCurrency(summary.ingresos_reales)}</p>
+            <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(summary.ingresos_reales)}</p>
           </div>
-          <div className="bg-white rounded-xl border border-slate-200 shadow-card p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-card p-4">
             <div className="flex items-center gap-1.5 mb-1">
               <TrendingDown size={14} className="text-red-500" />
-              <p className="text-xs text-slate-500 uppercase tracking-wide">Egresos Reales</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Egresos Reales</p>
             </div>
-            <p className="text-xl font-bold text-red-600">{formatCurrency(summary.egresos_reales)}</p>
+            <p className="text-xl font-bold text-red-600 dark:text-red-400">{formatCurrency(summary.egresos_reales)}</p>
           </div>
-          <div className="bg-white rounded-xl border border-slate-200 shadow-card p-4">
-            <p className="text-xs text-slate-500 uppercase tracking-wide mb-1">Balance Real</p>
-            <p className={`text-xl font-bold ${parseFloat(summary.balance_real) >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-card p-4">
+            <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Balance Real</p>
+            <p className={`text-xl font-bold ${parseFloat(summary.balance_real) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
               {formatCurrency(summary.balance_real)}
             </p>
           </div>
-          <div className="bg-white rounded-xl border border-slate-200 shadow-card p-4">
-            <p className="text-xs text-slate-500 uppercase tracking-wide mb-1">Balance c/Proyectado</p>
-            <p className={`text-xl font-bold ${parseFloat(summary.balance_total) >= 0 ? 'text-indigo-600' : 'text-red-600'}`}>
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-card p-4">
+            <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Balance c/Proyectado</p>
+            <p className={`text-xl font-bold ${parseFloat(summary.balance_total) >= 0 ? 'text-indigo-600 dark:text-indigo-400' : 'text-red-600 dark:text-red-400'}`}>
               {formatCurrency(summary.balance_total)}
             </p>
           </div>
@@ -107,17 +109,15 @@ export default function CashFlow() {
 
       {/* Gráfico mensual */}
       {summary?.monthly?.length > 0 && (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-card p-5 mb-5">
-          <h3 className="text-sm font-semibold text-slate-700 mb-4">Ingresos vs Egresos por Mes</h3>
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-card p-5 mb-5">
+          <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">Ingresos vs Egresos por Mes</h3>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={summary.monthly} margin={{ top: 0, right: 10, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-              <XAxis dataKey="mes" tick={{ fontSize: 11, fill: '#94a3b8' }} />
-              <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickFormatter={v => `$${(v/1000).toFixed(0)}k`} />
-              <Tooltip
-                contentStyle={{ borderRadius: 10, border: '1px solid #e2e8f0' }}
-                formatter={(v) => formatCurrency(v)} />
-              <Legend />
+              <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} />
+              <XAxis dataKey="mes" tick={chart.tick} />
+              <YAxis tick={chart.tick} tickFormatter={v => `$${(v/1000).toFixed(0)}k`} />
+              <Tooltip contentStyle={chart.tooltipStyle} formatter={(v) => formatCurrency(v)} />
+              <Legend wrapperStyle={{ fontSize: 12, color: chart.tick.fill }} />
               <Bar dataKey="ingresos" name="Ingresos" fill="#10b981" radius={[4,4,0,0]} />
               <Bar dataKey="egresos" name="Egresos" fill="#ef4444" radius={[4,4,0,0]} />
             </BarChart>
@@ -140,32 +140,32 @@ export default function CashFlow() {
       {loading ? (
         <TableSkeleton rows={6} cols={5} />
       ) : entries.length === 0 ? (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-card flex flex-col items-center justify-center h-48 text-slate-400">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-card flex flex-col items-center justify-center h-48 text-slate-400">
           <TrendingUp size={32} className="mb-2.5" />
           <p className="text-sm">No hay entradas en este período</p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-card overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-card overflow-hidden">
           {/* Desktop */}
           <div className="hidden sm:block overflow-x-auto">
-            <table className="min-w-full divide-y divide-slate-100">
-              <thead className="bg-slate-50">
+            <table className="min-w-full divide-y divide-slate-100 dark:divide-slate-800">
+              <thead className="bg-slate-50 dark:bg-slate-800">
                 <tr>
                   {['Fecha', 'Descripción', 'Categoría', 'Tipo', 'Monto', 'Estado', ''].map(h => (
-                    <th key={h} className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">{h}</th>
+                    <th key={h} className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50">
+              <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
                 {entries.map(e => (
-                  <tr key={e.id} className={`hover:bg-slate-50 transition-colors group ${e.is_projected ? 'opacity-70' : ''}`}>
-                    <td className="px-4 py-3 text-sm text-slate-500">{formatDate(e.flow_date)}</td>
-                    <td className="px-4 py-3 text-sm font-medium text-slate-900">{e.description || '—'}</td>
-                    <td className="px-4 py-3 text-sm text-slate-500">{e.category || '—'}</td>
+                  <tr key={e.id} className={`hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group ${e.is_projected ? 'opacity-70' : ''}`}>
+                    <td className="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">{formatDate(e.flow_date)}</td>
+                    <td className="px-4 py-3 text-sm font-medium text-slate-900 dark:text-slate-100">{e.description || '—'}</td>
+                    <td className="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">{e.category || '—'}</td>
                     <td className="px-4 py-3">
                       <Badge variant={e.type === 'ingreso' ? 'green' : 'red'}>{e.type}</Badge>
                     </td>
-                    <td className={`px-4 py-3 text-sm font-semibold ${e.type === 'ingreso' ? 'text-emerald-600' : 'text-red-600'}`}>
+                    <td className={`px-4 py-3 text-sm font-semibold ${e.type === 'ingreso' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
                       {e.type === 'ingreso' ? '+' : '-'}{formatCurrency(e.amount)}
                     </td>
                     <td className="px-4 py-3">
@@ -173,8 +173,8 @@ export default function CashFlow() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => openEdit(e)} className="text-slate-400 hover:text-indigo-600 p-1 rounded hover:bg-indigo-50 transition-colors"><Edit2 size={14} /></button>
-                        <button onClick={() => setDeleteId(e.id)} className="text-slate-400 hover:text-red-600 p-1 rounded hover:bg-red-50 transition-colors"><Trash2 size={14} /></button>
+                        <button onClick={() => openEdit(e)} className="text-slate-400 hover:text-indigo-600 p-1 rounded hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"><Edit2 size={14} /></button>
+                        <button onClick={() => setDeleteId(e.id)} className="text-slate-400 hover:text-red-600 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"><Trash2 size={14} /></button>
                       </div>
                     </td>
                   </tr>
@@ -184,24 +184,24 @@ export default function CashFlow() {
           </div>
 
           {/* Mobile */}
-          <div className="sm:hidden divide-y divide-slate-100">
+          <div className="sm:hidden divide-y divide-slate-100 dark:divide-slate-800">
             {entries.map(e => (
               <div key={e.id} className={`px-4 py-3.5 ${e.is_projected ? 'opacity-70' : ''}`}>
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-medium text-slate-900">{e.description || '—'}</p>
+                      <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{e.description || '—'}</p>
                       <Badge variant={e.type === 'ingreso' ? 'green' : 'red'}>{e.type}</Badge>
                       {e.is_projected && <Badge variant="yellow">Proyectado</Badge>}
                     </div>
-                    <p className="text-xs text-slate-400 mt-0.5">{formatDate(e.flow_date)}{e.category && ` · ${e.category}`}</p>
-                    <p className={`text-sm font-semibold mt-1 ${e.type === 'ingreso' ? 'text-emerald-600' : 'text-red-600'}`}>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{formatDate(e.flow_date)}{e.category && ` · ${e.category}`}</p>
+                    <p className={`text-sm font-semibold mt-1 ${e.type === 'ingreso' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
                       {e.type === 'ingreso' ? '+' : '-'}{formatCurrency(e.amount)}
                     </p>
                   </div>
                   <div className="flex gap-1 flex-shrink-0">
-                    <button onClick={() => openEdit(e)} className="text-slate-400 hover:text-indigo-600 p-1.5 rounded transition-colors"><Edit2 size={15} /></button>
-                    <button onClick={() => setDeleteId(e.id)} className="text-slate-400 hover:text-red-600 p-1.5 rounded transition-colors"><Trash2 size={15} /></button>
+                    <button onClick={() => openEdit(e)} className="text-slate-400 hover:text-indigo-600 p-1.5 rounded hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"><Edit2 size={15} /></button>
+                    <button onClick={() => setDeleteId(e.id)} className="text-slate-400 hover:text-red-600 p-1.5 rounded hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"><Trash2 size={15} /></button>
                   </div>
                 </div>
               </div>
@@ -227,8 +227,8 @@ export default function CashFlow() {
           <div className="flex items-center gap-2">
             <input type="checkbox" id="projected" checked={form.is_projected}
               onChange={e => setForm(p => ({ ...p, is_projected: e.target.checked }))}
-              className="w-4 h-4 rounded border-slate-300 text-indigo-600" />
-            <label htmlFor="projected" className="text-sm text-slate-700">Es un valor proyectado/estimado</label>
+              className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-indigo-600" />
+            <label htmlFor="projected" className="text-sm text-slate-700 dark:text-slate-300">Es un valor proyectado/estimado</label>
           </div>
           <Input label="Notas" value={form.notes} onChange={ff('notes')} />
           <div className="flex justify-end gap-3 pt-2">
@@ -241,7 +241,7 @@ export default function CashFlow() {
       <Modal isOpen={!!deleteId} onClose={() => setDeleteId(null)} title="Eliminar Entrada" size="sm">
         <div className="flex items-start gap-3 mb-5">
           <AlertTriangle size={20} className="text-red-500 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-slate-600">¿Eliminar esta entrada de cash flow?</p>
+          <p className="text-sm text-slate-600 dark:text-slate-300">¿Eliminar esta entrada de cash flow?</p>
         </div>
         <div className="flex justify-end gap-3">
           <Button variant="secondary" onClick={() => setDeleteId(null)}>Cancelar</Button>

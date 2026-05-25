@@ -19,7 +19,12 @@ app.use(cors({
   credentials: true,
 }));
 
+// Webhook routes use express.raw() internally — mount BEFORE express.json()
+// so their body parser middleware takes effect first for those paths.
+app.use('/api/webhooks', require('./routes/webhooks'));
+
 app.use(express.json());
+app.use(express.text({ type: 'text/plain', limit: '5mb' }));
 
 app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date() }));
 
@@ -34,6 +39,10 @@ app.use('/api/marketing', require('./routes/marketing'));
 app.use('/api/notes', require('./routes/notes'));
 app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/reports', require('./routes/reports'));
+app.use('/api/goals', require('./routes/goals'));
+app.use('/api/breakeven', require('./routes/breakeven'));
+app.use('/api/integrations', require('./routes/integrations'));
+app.use('/api/reconciliation', require('./routes/reconciliation'));
 
 app.use((err, req, res, next) => {
   console.error('[ERROR]', err.message, err.stack);

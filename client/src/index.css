@@ -9,12 +9,16 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+  html {
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
   body {
     @apply bg-slate-50 text-slate-900 font-sans;
+    @apply dark:bg-slate-950 dark:text-slate-50;
     font-feature-settings: 'cv11', 'ss01';
   }
   input[type='date']::-webkit-calendar-picker-indicator {
-    @apply opacity-50 cursor-pointer;
+    @apply opacity-50 cursor-pointer dark:invert;
   }
 }
 
@@ -23,20 +27,17 @@
     scrollbar-width: thin;
     scrollbar-color: #cbd5e1 transparent;
   }
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 4px;
-  }
-  .scrollbar-thin::-webkit-scrollbar-track {
-    background: transparent;
-  }
+  .scrollbar-thin::-webkit-scrollbar { width: 4px; }
+  .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
   .scrollbar-thin::-webkit-scrollbar-thumb {
     background-color: #cbd5e1;
     border-radius: 4px;
   }
-  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background-color: #94a3b8;
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover { background-color: #94a3b8; }
+
+  .dark .scrollbar-thin {
+    scrollbar-color: #334155 transparent;
   }
-  .text-balance {
-    text-wrap: balance;
-  }
+  .dark .scrollbar-thin::-webkit-scrollbar-thumb { background-color: #334155; }
+  .dark .scrollbar-thin::-webkit-scrollbar-thumb:hover { background-color: #475569; }
 }

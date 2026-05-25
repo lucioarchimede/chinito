@@ -84,22 +84,22 @@ export default function Configuracion() {
   ];
 
   const SuccessMsg = ({ msg }) => msg ? (
-    <div className="flex items-center gap-2 text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-3 mb-4 text-sm">
+    <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg px-4 py-3 mb-4 text-sm">
       <CheckCircle size={15} /> {msg}
     </div>
   ) : null;
 
   const ErrorMsg = ({ msg }) => msg ? (
-    <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 mb-4 text-sm">{msg}</div>
+    <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-lg px-4 py-3 mb-4 text-sm">{msg}</div>
   ) : null;
 
   return (
     <div className="max-w-2xl">
       {/* Tabs */}
-      <div className="flex border border-slate-200 rounded-xl overflow-hidden bg-white shadow-card mb-5">
+      <div className="flex border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden bg-white dark:bg-slate-900 shadow-card mb-5">
         {tabs.map(({ id, label, icon: Icon }) => (
           <button key={id} onClick={() => setTab(id)}
-            className={`flex items-center justify-center gap-2 flex-1 px-4 py-2.5 text-sm font-medium transition-colors ${tab === id ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>
+            className={`flex items-center justify-center gap-2 flex-1 px-4 py-2.5 text-sm font-medium transition-colors touch-manipulation ${tab === id ? 'bg-indigo-600 text-white' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
             <Icon size={14} />{label}
           </button>
         ))}
@@ -107,19 +107,19 @@ export default function Configuracion() {
 
       {/* Perfil */}
       {tab === 'profile' && (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-card p-6">
-          <h2 className="text-base font-semibold text-slate-900 mb-5">Información de perfil</h2>
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-card p-6">
+          <h2 className="text-base font-semibold text-slate-900 dark:text-slate-50 mb-5">Información de perfil</h2>
           <SuccessMsg msg={profileMsg} />
           <ErrorMsg msg={profileError} />
           <form onSubmit={handleSaveProfile} className="space-y-4">
             <Input label="Nombre" value={profile.name} onChange={e => setProfile(p => ({ ...p, name: e.target.value }))} required />
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
-              <p className="text-sm text-slate-600 bg-slate-50 px-3 py-2 rounded-lg border border-slate-200">{user?.email}</p>
-              <p className="text-xs text-slate-400 mt-1">El email no se puede modificar</p>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Email</label>
+              <p className="text-sm text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700">{user?.email}</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">El email no se puede modificar</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Rol</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Rol</label>
               <Badge variant={user?.role === 'admin' ? 'indigo' : 'gray'} className="capitalize text-xs px-3 py-1">
                 {user?.role}
               </Badge>
@@ -133,8 +133,8 @@ export default function Configuracion() {
 
       {/* Contraseña */}
       {tab === 'security' && (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-card p-6">
-          <h2 className="text-base font-semibold text-slate-900 mb-5">Cambiar contraseña</h2>
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-card p-6">
+          <h2 className="text-base font-semibold text-slate-900 dark:text-slate-50 mb-5">Cambiar contraseña</h2>
           <SuccessMsg msg={profileMsg} />
           <ErrorMsg msg={profileError} />
           <form onSubmit={handleSaveProfile} className="space-y-4">
@@ -157,10 +157,10 @@ export default function Configuracion() {
       {/* Gestión de usuarios */}
       {tab === 'users' && user?.role === 'admin' && (
         <div className="space-y-5">
-          <div className="bg-white rounded-xl border border-slate-200 shadow-card p-6">
-            <h2 className="text-base font-semibold text-slate-900 mb-4">Crear nuevo usuario</h2>
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-card p-6">
+            <h2 className="text-base font-semibold text-slate-900 dark:text-slate-50 mb-4">Crear nuevo usuario</h2>
             {userMsg && (
-              <div className="flex items-center gap-2 text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-3 mb-4 text-sm">
+              <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg px-4 py-3 mb-4 text-sm">
                 <CheckCircle size={15} /> {userMsg}
               </div>
             )}
@@ -186,12 +186,12 @@ export default function Configuracion() {
             </form>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 shadow-card overflow-hidden">
-            <div className="px-5 py-3.5 border-b border-slate-100">
-              <h3 className="text-sm font-semibold text-slate-700">Usuarios del sistema</h3>
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-card overflow-hidden">
+            <div className="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800">
+              <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Usuarios del sistema</h3>
             </div>
             {loadingUsers ? (
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-slate-100 dark:divide-slate-800">
                 {[1,2,3].map(i => (
                   <div key={i} className="flex items-center gap-3 px-5 py-3.5">
                     <Skeleton className="w-8 h-8 rounded-full flex-shrink-0" />
@@ -203,19 +203,19 @@ export default function Configuracion() {
                 ))}
               </div>
             ) : (
-              <ul className="divide-y divide-slate-100">
+              <ul className="divide-y divide-slate-100 dark:divide-slate-800">
                 {users.map(u => (
-                  <li key={u.id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-slate-50 transition-colors">
-                    <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-sm flex-shrink-0">
+                  <li key={u.id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-300 font-bold text-sm flex-shrink-0">
                       {u.name[0].toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-slate-900">{u.name}</p>
-                      <p className="text-xs text-slate-400">{u.email}</p>
+                      <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{u.name}</p>
+                      <p className="text-xs text-slate-400 dark:text-slate-500">{u.email}</p>
                     </div>
                     <div className="text-right flex-shrink-0">
                       <Badge variant={u.role === 'admin' ? 'indigo' : 'gray'} className="capitalize">{u.role}</Badge>
-                      <p className="text-xs text-slate-400 mt-1">{formatDate(u.created_at)}</p>
+                      <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">{formatDate(u.created_at)}</p>
                     </div>
                   </li>
                 ))}

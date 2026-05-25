@@ -5,7 +5,7 @@ import Badge from '../components/ui/Badge';
 import { Skeleton } from '../components/ui/Skeleton';
 import { formatCurrency, formatDate, monthStart, today } from '../utils/formatters';
 
-const dateInputCls = 'text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white hover:border-slate-400 transition-colors';
+const dateInputCls = 'text-sm border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-500 transition-colors text-slate-900 dark:text-slate-100 min-h-[42px]';
 
 export default function Clientes() {
   const [clients, setClients] = useState([]);
@@ -50,13 +50,13 @@ export default function Clientes() {
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-5">
           {[
-            { label: 'Clientes Únicos', value: stats.total_clientes, color: 'text-slate-900' },
-            { label: 'Clientes Nuevos', value: stats.clientes_nuevos, color: 'text-sky-600' },
-            { label: 'Recurrentes', value: stats.clientes_recurrentes, color: 'text-indigo-600' },
-            { label: 'CLV Promedio', value: formatCurrency(stats.clv_promedio), color: 'text-emerald-600' },
+            { label: 'Clientes Únicos', value: stats.total_clientes, color: 'text-slate-900 dark:text-slate-50' },
+            { label: 'Clientes Nuevos', value: stats.clientes_nuevos, color: 'text-sky-600 dark:text-sky-400' },
+            { label: 'Recurrentes', value: stats.clientes_recurrentes, color: 'text-indigo-600 dark:text-indigo-400' },
+            { label: 'CLV Promedio', value: formatCurrency(stats.clv_promedio), color: 'text-emerald-600 dark:text-emerald-400' },
           ].map(({ label, value, color }) => (
-            <div key={label} className="bg-white rounded-xl border border-slate-200 shadow-card p-4">
-              <p className="text-xs text-slate-500 uppercase tracking-wide">{label}</p>
+            <div key={label} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-card p-4">
+              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">{label}</p>
               <p className={`text-xl font-bold mt-1 ${color}`}>{value}</p>
             </div>
           ))}
@@ -67,14 +67,14 @@ export default function Clientes() {
       <div className="flex items-center gap-2.5 mb-5 flex-wrap">
         <input type="date" value={filters.start_date} onChange={e => setFilters(p => ({ ...p, start_date: e.target.value }))} className={dateInputCls} />
         <input type="date" value={filters.end_date} onChange={e => setFilters(p => ({ ...p, end_date: e.target.value }))} className={dateInputCls} />
-        <span className="text-sm text-slate-400">{total} cliente{total !== 1 ? 's' : ''}</span>
+        <span className="text-sm text-slate-400 dark:text-slate-500">{total} cliente{total !== 1 ? 's' : ''}</span>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Lista */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-card overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-card overflow-hidden">
           {loading ? (
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
               {Array.from({ length: 5 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-3 px-4 py-3.5">
                   <Skeleton className="w-9 h-9 rounded-full flex-shrink-0" />
@@ -91,25 +91,25 @@ export default function Clientes() {
               <p className="text-sm">No hay clientes en este período</p>
             </div>
           ) : (
-            <ul className="divide-y divide-slate-100">
+            <ul className="divide-y divide-slate-100 dark:divide-slate-800">
               {clients.map(c => (
                 <li key={c.email}
                   onClick={() => openDetail(c.email)}
-                  className={`flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 cursor-pointer transition-colors ${selected === c.email ? 'bg-indigo-50' : ''}`}>
-                  <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-sm flex-shrink-0">
+                  className={`flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors ${selected === c.email ? 'bg-indigo-50 dark:bg-indigo-900/20' : ''}`}>
+                  <div className="w-9 h-9 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-300 font-bold text-sm flex-shrink-0">
                     {(c.nombre || c.email)[0].toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium text-slate-900 truncate">{c.nombre || c.email}</p>
+                      <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{c.nombre || c.email}</p>
                       {c.is_repeat && <Badge variant="indigo">Recurrente</Badge>}
                     </div>
-                    <p className="text-xs text-slate-400 truncate">{c.email}</p>
-                    <p className="text-xs text-slate-400">{c.total_pedidos} pedido{c.total_pedidos !== 1 ? 's' : ''} · {formatDate(c.ultima_compra)}</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 truncate">{c.email}</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500">{c.total_pedidos} pedido{c.total_pedidos !== 1 ? 's' : ''} · {formatDate(c.ultima_compra)}</p>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <p className="text-sm font-semibold text-slate-900">{formatCurrency(c.total_revenue)}</p>
-                    <ChevronRight size={14} className="text-slate-300 ml-auto mt-1" />
+                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{formatCurrency(c.total_revenue)}</p>
+                    <ChevronRight size={14} className="text-slate-300 dark:text-slate-600 ml-auto mt-1" />
                   </div>
                 </li>
               ))}
@@ -118,7 +118,7 @@ export default function Clientes() {
         </div>
 
         {/* Detalle */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-card">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-card">
           {!selected ? (
             <div className="flex flex-col items-center justify-center h-64 text-slate-400">
               <Users size={32} className="mb-2.5" />
@@ -139,36 +139,36 @@ export default function Clientes() {
             <div className="p-5">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <h3 className="font-semibold text-slate-900">{clientDetail.profile.nombre}</h3>
-                  <p className="text-sm text-slate-500">{clientDetail.profile.email}</p>
-                  {clientDetail.profile.telefono && <p className="text-sm text-slate-400">{clientDetail.profile.telefono}</p>}
+                  <h3 className="font-semibold text-slate-900 dark:text-slate-100">{clientDetail.profile.nombre}</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">{clientDetail.profile.email}</p>
+                  {clientDetail.profile.telefono && <p className="text-sm text-slate-400 dark:text-slate-500">{clientDetail.profile.telefono}</p>}
                 </div>
                 <button onClick={() => { setSelected(null); setClientDetail(null); }}
-                  className="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-100 transition-colors">
+                  className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                   <X size={18} />
                 </button>
               </div>
               <div className="grid grid-cols-3 gap-3 mb-5">
                 {[
-                  { label: 'Pedidos', value: clientDetail.profile.total_pedidos, color: 'text-slate-900' },
-                  { label: 'Revenue', value: formatCurrency(clientDetail.profile.total_revenue), color: 'text-indigo-600' },
-                  { label: 'Ticket Prom.', value: formatCurrency(clientDetail.profile.ticket_promedio), color: 'text-slate-900' },
+                  { label: 'Pedidos', value: clientDetail.profile.total_pedidos, color: 'text-slate-900 dark:text-slate-100' },
+                  { label: 'Revenue', value: formatCurrency(clientDetail.profile.total_revenue), color: 'text-indigo-600 dark:text-indigo-400' },
+                  { label: 'Ticket Prom.', value: formatCurrency(clientDetail.profile.ticket_promedio), color: 'text-slate-900 dark:text-slate-100' },
                 ].map(({ label, value, color }) => (
-                  <div key={label} className="bg-slate-50 rounded-xl p-3 text-center">
-                    <p className="text-xs text-slate-500 mb-1">{label}</p>
+                  <div key={label} className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3 text-center">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">{label}</p>
                     <p className={`text-base font-bold ${color}`}>{value}</p>
                   </div>
                 ))}
               </div>
-              <h4 className="text-sm font-semibold text-slate-700 mb-2">Historial de compras</h4>
+              <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Historial de compras</h4>
               <div className="space-y-1.5 max-h-64 overflow-y-auto scrollbar-thin">
                 {clientDetail.purchases.map(p => (
-                  <div key={p.id} className="flex justify-between items-center py-2 border-b border-slate-100 text-sm">
+                  <div key={p.id} className="flex justify-between items-center py-2 border-b border-slate-100 dark:border-slate-800 text-sm">
                     <div>
-                      <p className="font-medium text-slate-800">{p.product_nombre || 'Producto eliminado'}</p>
-                      <p className="text-xs text-slate-400">{formatDate(p.sale_date)} · {p.sale_channel} · x{p.quantity}</p>
+                      <p className="font-medium text-slate-800 dark:text-slate-200">{p.product_nombre || 'Producto eliminado'}</p>
+                      <p className="text-xs text-slate-400 dark:text-slate-500">{formatDate(p.sale_date)} · {p.sale_channel} · x{p.quantity}</p>
                     </div>
-                    <p className="font-semibold text-slate-900">{formatCurrency(p.final_revenue)}</p>
+                    <p className="font-semibold text-slate-900 dark:text-slate-100">{formatCurrency(p.final_revenue)}</p>
                   </div>
                 ))}
               </div>

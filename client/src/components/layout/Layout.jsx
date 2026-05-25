@@ -12,6 +12,10 @@ const titles = {
   '/clientes': 'Clientes',
   '/cash-flow': 'Cash Flow',
   '/marketing': 'Marketing',
+  '/metas': 'Metas y Objetivos',
+  '/break-even': 'Punto de Equilibrio',
+  '/integraciones': 'Integraciones',
+  '/conciliacion': 'Conciliación Bancaria',
   '/notas': 'Notas',
   '/reportes': 'Reportes',
   '/configuracion': 'Configuración',
@@ -27,11 +31,11 @@ export default function Layout() {
   }, [pathname]);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50">
+    <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-950 transition-colors">
       {/* Mobile backdrop */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}

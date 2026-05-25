@@ -9,6 +9,7 @@ import Select from '../components/ui/Select';
 import Badge from '../components/ui/Badge';
 import { TableSkeleton } from '../components/ui/Skeleton';
 import { formatCurrency, formatDate, formatDateInput, today, monthStart } from '../utils/formatters';
+import { useChartTheme } from '../context/ThemeContext';
 
 const EMPTY = {
   expense_date: today(), category: '', subcategory: '', description: '', amount: '',
@@ -23,7 +24,7 @@ const CATEGORIES = [
 ];
 const COLORS = ['#6366f1', '#ef4444', '#f59e0b', '#10b981', '#8b5cf6'];
 const catColor = (c) => ({ marketing:'purple', operativos:'blue', personal:'orange', impuestos:'red', otros:'gray' }[c] || 'gray');
-const dateInputCls = 'text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white hover:border-slate-400 transition-colors';
+const dateInputCls = 'text-sm border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-500 transition-colors text-slate-900 dark:text-slate-100 min-h-[42px]';
 
 export default function Gastos() {
   const [expenses, setExpenses] = useState([]);
@@ -37,6 +38,7 @@ export default function Gastos() {
   const [editId, setEditId] = useState(null);
   const [saving, setSaving] = useState(false);
   const [filters, setFilters] = useState({ start_date: monthStart(), end_date: today(), category: '' });
+  const chart = useChartTheme();
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -92,19 +94,19 @@ export default function Gastos() {
     <div>
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 mb-5">
-        <div className="bg-white rounded-xl border border-slate-200 shadow-card p-4">
-          <p className="text-xs text-slate-500 uppercase tracking-wide">Total Gastos</p>
-          <p className="text-xl font-bold text-red-600 mt-1">{formatCurrency(totalAmount)}</p>
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-card p-4">
+          <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Total Gastos</p>
+          <p className="text-xl font-bold text-red-600 dark:text-red-400 mt-1">{formatCurrency(totalAmount)}</p>
         </div>
-        <div className="bg-white rounded-xl border border-slate-200 shadow-card p-4">
-          <p className="text-xs text-slate-500 uppercase tracking-wide">Cantidad</p>
-          <p className="text-xl font-bold text-slate-900 mt-1">{total} gastos</p>
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-card p-4">
+          <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Cantidad</p>
+          <p className="text-xl font-bold text-slate-900 dark:text-slate-50 mt-1">{total} gastos</p>
         </div>
         {byCategory[0] && (
-          <div className="bg-white rounded-xl border border-slate-200 shadow-card p-4">
-            <p className="text-xs text-slate-500 uppercase tracking-wide">Mayor Categoría</p>
-            <p className="text-xl font-bold text-slate-900 mt-1 capitalize">{byCategory[0].category}</p>
-            <p className="text-sm text-slate-400">{formatCurrency(byCategory[0].total)}</p>
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-card p-4">
+            <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Mayor Categoría</p>
+            <p className="text-xl font-bold text-slate-900 dark:text-slate-50 mt-1 capitalize">{byCategory[0].category}</p>
+            <p className="text-sm text-slate-400 dark:text-slate-500">{formatCurrency(byCategory[0].total)}</p>
           </div>
         )}
       </div>
@@ -126,42 +128,42 @@ export default function Gastos() {
           {loading ? (
             <TableSkeleton rows={5} cols={5} />
           ) : expenses.length === 0 ? (
-            <div className="bg-white rounded-xl border border-slate-200 shadow-card flex flex-col items-center justify-center h-48 text-slate-400">
+            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-card flex flex-col items-center justify-center h-48 text-slate-400">
               <Receipt size={32} className="mb-2.5" />
               <p className="text-sm">No hay gastos en este período</p>
             </div>
           ) : (
-            <div className="bg-white rounded-xl border border-slate-200 shadow-card overflow-hidden">
+            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-card overflow-hidden">
               {/* Desktop */}
               <div className="hidden sm:block overflow-x-auto">
-                <table className="min-w-full divide-y divide-slate-100">
-                  <thead className="bg-slate-50">
+                <table className="min-w-full divide-y divide-slate-100 dark:divide-slate-800">
+                  <thead className="bg-slate-50 dark:bg-slate-800">
                     <tr>
                       {['Fecha', 'Descripción', 'Categoría', 'Monto', 'Proveedor', ''].map(h => (
-                        <th key={h} className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">{h}</th>
+                        <th key={h} className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">{h}</th>
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-50">
+                  <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
                     {expenses.map(e => (
-                      <tr key={e.id} className="hover:bg-slate-50 transition-colors group">
-                        <td className="px-4 py-3 text-sm text-slate-500">{formatDate(e.expense_date)}</td>
+                      <tr key={e.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
+                        <td className="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">{formatDate(e.expense_date)}</td>
                         <td className="px-4 py-3">
-                          <div className="text-sm font-medium text-slate-900">{e.description}</div>
+                          <div className="text-sm font-medium text-slate-900 dark:text-slate-100">{e.description}</div>
                           <div className="flex gap-1.5 mt-0.5">
-                            {e.subcategory && <span className="text-xs text-slate-400">{e.subcategory}</span>}
+                            {e.subcategory && <span className="text-xs text-slate-400 dark:text-slate-500">{e.subcategory}</span>}
                             {e.is_recurring && <Badge variant="blue">Recurrente</Badge>}
                           </div>
                         </td>
                         <td className="px-4 py-3">
                           <Badge variant={catColor(e.category)} className="capitalize">{e.category}</Badge>
                         </td>
-                        <td className="px-4 py-3 text-sm font-semibold text-red-600">{formatCurrency(e.amount)}</td>
-                        <td className="px-4 py-3 text-sm text-slate-500">{e.supplier || '—'}</td>
+                        <td className="px-4 py-3 text-sm font-semibold text-red-600 dark:text-red-400">{formatCurrency(e.amount)}</td>
+                        <td className="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">{e.supplier || '—'}</td>
                         <td className="px-4 py-3">
                           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onClick={() => openEdit(e)} className="text-slate-400 hover:text-indigo-600 p-1 rounded hover:bg-indigo-50 transition-colors"><Edit2 size={14} /></button>
-                            <button onClick={() => setDeleteId(e.id)} className="text-slate-400 hover:text-red-600 p-1 rounded hover:bg-red-50 transition-colors"><Trash2 size={14} /></button>
+                            <button onClick={() => openEdit(e)} className="text-slate-400 hover:text-indigo-600 p-1 rounded hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"><Edit2 size={14} /></button>
+                            <button onClick={() => setDeleteId(e.id)} className="text-slate-400 hover:text-red-600 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"><Trash2 size={14} /></button>
                           </div>
                         </td>
                       </tr>
@@ -171,21 +173,21 @@ export default function Gastos() {
               </div>
 
               {/* Mobile */}
-              <div className="sm:hidden divide-y divide-slate-100">
+              <div className="sm:hidden divide-y divide-slate-100 dark:divide-slate-800">
                 {expenses.map(e => (
                   <div key={e.id} className="px-4 py-3.5">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <p className="text-sm font-medium text-slate-900">{e.description}</p>
+                          <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{e.description}</p>
                           <Badge variant={catColor(e.category)} className="capitalize">{e.category}</Badge>
                         </div>
-                        <p className="text-xs text-slate-400 mt-0.5">{formatDate(e.expense_date)}{e.supplier && ` · ${e.supplier}`}</p>
-                        <p className="text-sm font-semibold text-red-600 mt-1">{formatCurrency(e.amount)}</p>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{formatDate(e.expense_date)}{e.supplier && ` · ${e.supplier}`}</p>
+                        <p className="text-sm font-semibold text-red-600 dark:text-red-400 mt-1">{formatCurrency(e.amount)}</p>
                       </div>
                       <div className="flex gap-1 flex-shrink-0">
-                        <button onClick={() => openEdit(e)} className="text-slate-400 hover:text-indigo-600 p-1.5 rounded hover:bg-indigo-50 transition-colors"><Edit2 size={15} /></button>
-                        <button onClick={() => setDeleteId(e.id)} className="text-slate-400 hover:text-red-600 p-1.5 rounded hover:bg-red-50 transition-colors"><Trash2 size={15} /></button>
+                        <button onClick={() => openEdit(e)} className="text-slate-400 hover:text-indigo-600 p-1.5 rounded hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"><Edit2 size={15} /></button>
+                        <button onClick={() => setDeleteId(e.id)} className="text-slate-400 hover:text-red-600 p-1.5 rounded hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"><Trash2 size={15} /></button>
                       </div>
                     </div>
                   </div>
@@ -196,8 +198,8 @@ export default function Gastos() {
         </div>
 
         {/* Pie chart */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-card p-5">
-          <h3 className="text-sm font-semibold text-slate-700 mb-4">Por Categoría</h3>
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-card p-5">
+          <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">Por Categoría</h3>
           {byCategory.length > 0 ? (
             <>
               <ResponsiveContainer width="100%" height={170}>
@@ -205,9 +207,7 @@ export default function Gastos() {
                   <Pie data={byCategory} dataKey="total" nameKey="category" cx="50%" cy="50%" outerRadius={65} innerRadius={28}>
                     {byCategory.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                   </Pie>
-                  <Tooltip
-                    contentStyle={{ borderRadius: 10, border: '1px solid #e2e8f0' }}
-                    formatter={(v) => formatCurrency(v)} />
+                  <Tooltip contentStyle={chart.tooltipStyle} formatter={(v) => formatCurrency(v)} />
                 </PieChart>
               </ResponsiveContainer>
               <div className="space-y-2 mt-3">
@@ -215,9 +215,9 @@ export default function Gastos() {
                   <div key={cat.category} className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
                       <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                      <span className="capitalize text-slate-700">{cat.category}</span>
+                      <span className="capitalize text-slate-700 dark:text-slate-300">{cat.category}</span>
                     </div>
-                    <span className="font-medium text-slate-900">{formatCurrency(cat.total)}</span>
+                    <span className="font-medium text-slate-900 dark:text-slate-100">{formatCurrency(cat.total)}</span>
                   </div>
                 ))}
               </div>
@@ -254,8 +254,8 @@ export default function Gastos() {
           <div className="flex items-center gap-2">
             <input type="checkbox" id="recurring" checked={form.is_recurring}
               onChange={e => setForm(p => ({ ...p, is_recurring: e.target.checked }))}
-              className="w-4 h-4 rounded border-slate-300 text-indigo-600" />
-            <label htmlFor="recurring" className="text-sm text-slate-700">Gasto recurrente (mensual)</label>
+              className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-indigo-600" />
+            <label htmlFor="recurring" className="text-sm text-slate-700 dark:text-slate-300">Gasto recurrente (mensual)</label>
           </div>
           <Input label="Notas" value={form.notes} onChange={ff('notes')} />
           <div className="flex justify-end gap-3 pt-2">
@@ -268,7 +268,7 @@ export default function Gastos() {
       <Modal isOpen={!!deleteId} onClose={() => setDeleteId(null)} title="Eliminar Gasto" size="sm">
         <div className="flex items-start gap-3 mb-5">
           <AlertTriangle size={20} className="text-red-500 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-slate-600">¿Eliminar este gasto? Esta acción no se puede deshacer.</p>
+          <p className="text-sm text-slate-600 dark:text-slate-300">¿Eliminar este gasto? Esta acción no se puede deshacer.</p>
         </div>
         <div className="flex justify-end gap-3">
           <Button variant="secondary" onClick={() => setDeleteId(null)}>Cancelar</Button>
