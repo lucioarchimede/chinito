@@ -1,20 +1,19 @@
 /**
  * integrations.js
- * Handles OAuth flows (Tiendanube & Shopify), real sync, config and logs.
  *
  * Route layout:
- *  PUBLIC (no auth — OAuth callbacks from external platforms):
- *    GET /api/integrations/tiendanube/callback
- *    GET /api/integrations/shopify/callback
+ *  PUBLIC (no auth — OAuth callback from Shopify only):
+ *    GET  /api/integrations/shopify/callback
  *
  *  AUTHENTICATED (JWT required):
- *    GET  /api/integrations                     - list all
- *    GET  /api/integrations/tiendanube/auth     - start TN OAuth → returns { authUrl }
- *    GET  /api/integrations/shopify/auth        - start Shopify OAuth → returns { authUrl }
- *    GET  /api/integrations/:platform           - single integration status
+ *    GET  /api/integrations                        - list all
+ *    POST /api/integrations/tiendanube/test        - validate Store ID + Access Token
+ *    POST /api/integrations/tiendanube/connect     - save TN credentials
+ *    GET  /api/integrations/shopify/auth           - start Shopify OAuth → returns { authUrl }
+ *    GET  /api/integrations/:platform              - single integration status
  *    PUT  /api/integrations/:platform/disconnect
  *    PUT  /api/integrations/:platform/config
- *    POST /api/integrations/:platform/sync      - real sync (type in body)
+ *    POST /api/integrations/:platform/sync         - real sync (type in body)
  *    GET  /api/integrations/:platform/logs
  */
 const express = require('express');
@@ -99,50 +98,7 @@ function buildShopify(integration) {
   return new ShopifyIntegration(creds.shop, token);
 }
 
-// ── PUBLIC: OAuth callbacks (NO auth middleware) ───────────────────────────────
-
-// GET /api/integrations/tiendanube/callback
-router.get('/tiendanube/callback', async (req, res) => {
-  const { code, state } = req.query;
-  if (!code || !state) {
-    return res.redirect(`${FRONTEND_URL}/integraciones?error=missing_params`);
-  }
-
-  const stateData = consumeState(state);
-  if (!stateData) {
-    return res.redirect(`${FRONTEND_URL}/integraciones?error=invalid_state`);
-  }
-
-  const clientId = process.env.TIENDANUBE_CLIENT_ID;
-  const clientSecret = process.env.TIENDANUBE_CLIENT_SECRET;
-  if (!clientId || !clientSecret) {
-    return res.redirect(`${FRONTEND_URL}/integraciones?error=not_configured`);
-  }
-
-  try {
-    const tokenData = await TiendanubeIntegration.exchangeCodeForToken(clientId, clientSecret, code);
-    const { access_token, user_id } = tokenData;
-
-    await db.query(
-      `UPDATE integrations
-         SET is_active=true,
-             credentials=$1::jsonb,
-             sync_status='idle',
-             sync_error=null,
-             updated_at=NOW()
-       WHERE platform='tiendanube'`,
-      [JSON.stringify({
-        access_token_enc: encrypt(access_token),
-        store_id: String(user_id),
-      })]
-    );
-
-    res.redirect(`${FRONTEND_URL}/integraciones?connected=tiendanube`);
-  } catch (err) {
-    console.error('[TN OAuth callback]', err.message);
-    res.redirect(`${FRONTEND_URL}/integraciones?error=oauth_failed&platform=tiendanube`);
-  }
-});
+// ── PUBLIC: OAuth callback — Shopify only (Tiendanube uses direct token) ──────
 
 // GET /api/integrations/shopify/callback
 router.get('/shopify/callback', async (req, res) => {
@@ -209,15 +165,71 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /api/integrations/tiendanube/auth  → Start Tiendanube OAuth
-router.get('/tiendanube/auth', (req, res) => {
-  const clientId = process.env.TIENDANUBE_CLIENT_ID;
-  if (!clientId) {
-    return res.status(503).json({ error: 'TIENDANUBE_CLIENT_ID no está configurado en el servidor' });
+// POST /api/integrations/tiendanube/test
+// Body: { storeId, accessToken }
+// Validates the credentials without saving them. Returns { valid, storeName } or error.
+router.post('/tiendanube/test', async (req, res) => {
+  const { storeId, accessToken } = req.body;
+  if (!storeId || !accessToken) {
+    return res.status(400).json({ error: 'Se requieren storeId y accessToken' });
   }
-  const state = generateState({ userId: req.user.id, platform: 'tiendanube' });
-  const authUrl = TiendanubeIntegration.getAuthURL(clientId, state);
-  res.json({ authUrl });
+  try {
+    const store = await TiendanubeIntegration.testCredentials(String(storeId).trim(), accessToken.trim());
+    res.json({ valid: true, storeName: store.name?.es || store.name || store.original_domain || storeId });
+  } catch (err) {
+    const status = err.response?.status;
+    if (status === 401 || status === 403) {
+      return res.json({ valid: false, error: 'Token inválido o sin permisos suficientes' });
+    }
+    if (status === 404) {
+      return res.json({ valid: false, error: 'Store ID incorrecto — tienda no encontrada' });
+    }
+    console.error('[TN test]', err.message);
+    res.json({ valid: false, error: 'No se pudo conectar con TiendaNube. Verificar credenciales.' });
+  }
+});
+
+// POST /api/integrations/tiendanube/connect
+// Body: { storeId, accessToken }
+// Validates and persists encrypted credentials.
+router.post('/tiendanube/connect', async (req, res) => {
+  const { storeId, accessToken } = req.body;
+  if (!storeId || !accessToken) {
+    return res.status(400).json({ error: 'Se requieren storeId y accessToken' });
+  }
+  try {
+    // Validate before saving
+    const store = await TiendanubeIntegration.testCredentials(String(storeId).trim(), accessToken.trim());
+
+    await db.query(
+      `UPDATE integrations
+         SET is_active=true,
+             credentials=$1::jsonb,
+             sync_status='idle',
+             sync_error=null,
+             updated_at=NOW()
+       WHERE platform='tiendanube'`,
+      [JSON.stringify({
+        access_token_enc: encrypt(accessToken.trim()),
+        store_id: String(storeId).trim(),
+      })]
+    );
+
+    res.json({
+      success: true,
+      storeName: store.name?.es || store.name || store.original_domain || storeId,
+    });
+  } catch (err) {
+    const status = err.response?.status;
+    if (status === 401 || status === 403) {
+      return res.status(400).json({ error: 'Token inválido o sin permisos suficientes' });
+    }
+    if (status === 404) {
+      return res.status(400).json({ error: 'Store ID incorrecto — tienda no encontrada' });
+    }
+    console.error('[TN connect]', err.message);
+    res.status(500).json({ error: 'Error al conectar con TiendaNube' });
+  }
 });
 
 // GET /api/integrations/shopify/auth?shop=mystore.myshopify.com  → Start Shopify OAuth

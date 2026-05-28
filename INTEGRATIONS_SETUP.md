@@ -14,38 +14,43 @@ cp server/.env.example server/.env
 
 ---
 
-## 1. Tiendanube
+## 1. Tiendanube (sin ser Partner — Access Token directo)
 
-### Crear la app en Tiendanube Partners
+No se necesita cuenta de Partner. El Access Token se genera directamente desde el panel de administración de la tienda.
 
-1. Ir a [partners.tiendanube.com](https://partners.tiendanube.com) → Crear cuenta de partner
-2. Crear nueva aplicación → Tipo: **Aplicación privada** (para tu propio uso) o **Pública**
-3. En "OAuth redirect URIs" agregar:
-   - Desarrollo: `http://localhost:3001/api/integrations/tiendanube/callback`
-   - Producción: `https://tu-backend.railway.app/api/integrations/tiendanube/callback`
-4. Permisos (scopes) requeridos:
-   - `read_products`, `write_products`
-   - `read_orders`
-   - `write_stock`
-5. Copiar **Client ID** y **Client Secret**
+### Obtener Store ID y Access Token
 
-### Variables de entorno
+1. Andá a `https://tutienda.mitiendanube.com/admin`
+2. **Configuraciones** → **API** → **Aplicaciones**
+3. Click en **Crear aplicación**
+4. Nombre: `EcomDash`
+5. Seleccioná los permisos:
+   - `read:products` / `write:products`
+   - `read:orders` / `write:orders`
+   - `read:stock` / `write:stock`
+6. Click **Crear**
+7. Copiá el **Access Token** que aparece (larga cadena alfanumérica)
+8. Tu **Store ID** es el número que aparece en la URL del admin, o en la sección de API
 
-```env
-TIENDANUBE_CLIENT_ID=tu_client_id
-TIENDANUBE_CLIENT_SECRET=tu_client_secret
-```
+### Conectar en EcomDash
 
-### Flujo de conexión
+1. Ir a **Integraciones** → card de **Tienda Nube** → **Conectar**
+2. Ingresar el **Store ID** (número)
+3. Ingresar el **Access Token**
+4. Click **Probar conexión** → si aparece ✅ el token es válido
+5. Click **Conectar** → listo
 
-1. En EcomDash ir a **Integraciones** → botón **Conectar con Tienda Nube**
-2. Serás redirigido a TiendaNube para autorizar
-3. Tras autorizar, volvés automáticamente a `/integraciones` con la integración activa
-4. Hacer clic en **Sincronizar** → **Sincronización completa**
+### Variables de entorno requeridas
+
+Ninguna — todo se ingresa en la UI.
+
+### Sincronización
+
+- Click **Sincronizar** → **Sincronización completa** para importar productos y órdenes
+- Los productos se upsertean por SKU
+- Las órdenes pagadas se importan como ventas (deduplicadas)
 
 ### Webhooks (opcional — sync en tiempo real)
-
-Una vez conectado, registrar webhooks desde el panel de Integraciones → botón **Registrar webhooks** (o vía API):
 
 ```bash
 curl -X POST http://localhost:3001/api/integrations/tiendanube/register-webhooks \
@@ -54,7 +59,7 @@ curl -X POST http://localhost:3001/api/integrations/tiendanube/register-webhooks
   -d '{"base_url": "https://tu-backend.railway.app"}'
 ```
 
-Eventos registrados: `order/created`, `order/updated`, `product/updated`
+Eventos: `order/created`, `order/updated`, `product/updated`
 
 ---
 

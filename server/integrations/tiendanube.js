@@ -6,7 +6,6 @@
 const axios = require('axios');
 
 const TN_API_BASE = 'https://api.tiendanube.com/v1';
-const TN_AUTH_BASE = 'https://www.tiendanube.com/apps';
 // Tiendanube rate limit: 40 req/min → wait 1.5 s between paginated calls
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -24,26 +23,19 @@ class TiendanubeIntegration {
     });
   }
 
-  // ── Static OAuth helpers ──────────────────────────────────────────────────
-
   /**
-   * Returns the URL where the user must be redirected to authorize the app.
+   * Validates that a Store ID + Access Token pair is working by calling
+   * GET /store. Returns the store object on success, throws on failure.
    */
-  static getAuthURL(clientId, state) {
-    return `${TN_AUTH_BASE}/${clientId}/authorize?client_id=${clientId}&state=${encodeURIComponent(state)}`;
-  }
-
-  /**
-   * Exchanges an authorization code for an access token.
-   * Returns { access_token, token_type, scope, user_id }
-   */
-  static async exchangeCodeForToken(clientId, clientSecret, code) {
-    const resp = await axios.post(`${TN_AUTH_BASE}/authorize/token`, {
-      client_id: clientId,
-      client_secret: clientSecret,
-      code,
+  static async testCredentials(storeId, accessToken) {
+    const resp = await axios.get(`${TN_API_BASE}/${storeId}/store`, {
+      headers: {
+        Authentication: `bearer ${accessToken}`,
+        'User-Agent': 'EcomDash/2.0 (soporte@ecomdash.app)',
+      },
+      timeout: 10000,
     });
-    return resp.data;
+    return resp.data; // { id, name, email, ... }
   }
 
   // ── Private HTTP helpers ──────────────────────────────────────────────────

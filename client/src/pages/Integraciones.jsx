@@ -18,8 +18,8 @@ const PLATFORM_INFO = {
     name: 'Tienda Nube',
     color: 'bg-blue-500',
     logo: '☁️',
-    authType: 'oauth', // redirects to Tiendanube OAuth
-    description: 'Sincroniza productos, órdenes y stock con tu tienda TiendaNube.',
+    authType: 'token', // manual Store ID + Access Token form
+    description: 'Conectá con tu Store ID y Access Token. Podés generarlo en el panel de tu tienda.',
   },
   shopify: {
     name: 'Shopify',
@@ -50,6 +50,101 @@ const STATUS_INFO = {
 };
 
 // ── Sub-components ────────────────────────────────────────────────────────────
+
+function TiendanubeConnectModal({ onClose, onConnected }) {
+  const [storeId, setStoreId] = useState('');
+  const [accessToken, setAccessToken] = useState('');
+  const [testState, setTestState] = useState(null); // null | 'testing' | { ok, message }
+  const [saving, setSaving] = useState(false);
+
+  const handleTest = async (e) => {
+    e.preventDefault();
+    if (!storeId.trim() || !accessToken.trim()) return;
+    setTestState('testing');
+    try {
+      const res = await api.post('/integrations/tiendanube/test', {
+        storeId: storeId.trim(),
+        accessToken: accessToken.trim(),
+      });
+      if (res.data.valid) {
+        setTestState({ ok: true, message: `✅ Conexión válida — tienda: ${res.data.storeName}` });
+      } else {
+        setTestState({ ok: false, message: `❌ ${res.data.error}` });
+      }
+    } catch {
+      setTestState({ ok: false, message: '❌ Error al contactar el servidor. Intentá de nuevo.' });
+    }
+  };
+
+  const handleConnect = async () => {
+    if (!storeId.trim() || !accessToken.trim()) return;
+    setSaving(true);
+    try {
+      const res = await api.post('/integrations/tiendanube/connect', {
+        storeId: storeId.trim(),
+        accessToken: accessToken.trim(),
+      });
+      onConnected(res.data.storeName);
+    } catch (err) {
+      setTestState({ ok: false, message: `❌ ${err.response?.data?.error || 'Error al guardar'}` });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
+        <span className="text-2xl">☁️</span>
+        <div>
+          <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">Conectar Tienda Nube</p>
+          <p className="text-xs text-slate-400">Generá el token en: Panel → Configuraciones → API → Aplicaciones</p>
+        </div>
+      </div>
+
+      <Input
+        label="Store ID"
+        placeholder="ej: 123456"
+        value={storeId}
+        onChange={(e) => { setStoreId(e.target.value); setTestState(null); }}
+      />
+      <Input
+        label="Access Token"
+        type="password"
+        placeholder="Tu token de acceso"
+        value={accessToken}
+        onChange={(e) => { setAccessToken(e.target.value); setTestState(null); }}
+      />
+
+      {testState && testState !== 'testing' && (
+        <p className={`text-sm px-3 py-2 rounded-lg ${testState.ok ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400' : 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400'}`}>
+          {testState.message}
+        </p>
+      )}
+
+      <div className="flex gap-2 pt-1">
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={handleTest}
+          disabled={testState === 'testing' || !storeId || !accessToken}
+          className="flex-1"
+        >
+          {testState === 'testing' ? 'Probando...' : 'Probar conexión'}
+        </Button>
+        <Button
+          type="button"
+          onClick={handleConnect}
+          disabled={saving || !storeId || !accessToken}
+          className="flex-1"
+        >
+          {saving ? 'Guardando...' : 'Conectar'}
+        </Button>
+      </div>
+      <Button type="button" variant="ghost" onClick={onClose} className="w-full">Cancelar</Button>
+    </div>
+  );
+}
 
 function ShopifyConnectModal({ onConnect, onClose }) {
   const [shop, setShop] = useState('');
@@ -354,14 +449,12 @@ export default function Integraciones() {
   const handleConnectClick = (platform) => {
     const info = PLATFORM_INFO[platform];
     if (!info) return;
-    if (info.authType === 'oauth') {
-      if (platform === 'shopify') {
-        setConnectModal('shopify'); // show domain input first
-      } else {
-        startOAuth(platform); // TiendaNube: direct redirect
-      }
+    if (info.authType === 'token' || info.authType === 'manual') {
+      setConnectModal(platform); // TiendaNube / MercadoLibre: form modal
+    } else if (platform === 'shopify') {
+      setConnectModal('shopify'); // Shopify OAuth: domain input first
     } else {
-      setConnectModal(platform); // MercadoLibre: manual form
+      startOAuth(platform);
     }
   };
 
@@ -431,11 +524,13 @@ export default function Integraciones() {
                   {info.description}
                 </p>
 
-                {/* OAuth badge */}
-                {info.authType === 'oauth' && !integration.is_active && (
+                {/* Auth method badge */}
+                {!integration.is_active && (
                   <div className="flex items-center gap-1.5 text-xs text-indigo-600 dark:text-indigo-400 mb-3">
                     <Zap size={11} />
-                    OAuth 2.0 — autorización segura
+                    {info.authType === 'oauth' ? 'OAuth 2.0 — autorización segura'
+                     : info.authType === 'token' ? 'Access Token — generado desde tu panel'
+                     : 'Credenciales manuales'}
                   </div>
                 )}
 
@@ -487,6 +582,7 @@ export default function Integraciones() {
                         : <><Link2 size={14} /> Conectar</>}
                     </Button>
                   )}
+
                 </div>
               </div>
             );
@@ -512,6 +608,24 @@ export default function Integraciones() {
         </div>
       )}
 
+      {/* Tiendanube: token-based connect modal */}
+      {connectModal === 'tiendanube' && (
+        <Modal
+          isOpen
+          onClose={() => setConnectModal(null)}
+          title="Conectar Tienda Nube"
+        >
+          <TiendanubeConnectModal
+            onClose={() => setConnectModal(null)}
+            onConnected={(storeName) => {
+              setConnectModal(null);
+              fetchIntegrations();
+              showToast('success', `¡Tienda Nube conectada! (${storeName})`);
+            }}
+          />
+        </Modal>
+      )}
+
       {/* Shopify connect modal (needs domain input) */}
       {connectModal === 'shopify' && (
         <Modal
@@ -527,7 +641,7 @@ export default function Integraciones() {
       )}
 
       {/* Manual connect modal (MercadoLibre) */}
-      {connectModal && connectModal !== 'shopify' && PLATFORM_INFO[connectModal]?.authType === 'manual' && (
+      {connectModal && connectModal !== 'shopify' && connectModal !== 'tiendanube' && PLATFORM_INFO[connectModal]?.authType === 'manual' && (
         <Modal
           isOpen
           onClose={() => setConnectModal(null)}
